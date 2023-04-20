@@ -15,7 +15,6 @@ public class TacoCloudApplication {
 	@Bean
 	public InternalResourceViewResolver internalResourceViewResolver() {
 	    InternalResourceViewResolver internalResourceViewResolver = new InternalResourceViewResolver();
-//	    internalResourceViewResolver.setPrefix("pages/");
 	    internalResourceViewResolver.setSuffix(".html");
 	    return internalResourceViewResolver;
 	}
