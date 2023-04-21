@@ -7,18 +7,31 @@ import java.util.Date;
 import java.util.List;
 
 import org.hibernate.validator.constraints.CreditCardNumber;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Getter @Setter
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Table("taco_orders")
 public class TacoOrder implements Serializable {
 	
 	@Serial
+	@Setter(value = AccessLevel.NONE)
+	@Getter(value = AccessLevel.NONE)
 	private static final long serialVersionUID = 1L;
 
+	@Id
 	private Long id;
 	private Date placedAt;
 	
