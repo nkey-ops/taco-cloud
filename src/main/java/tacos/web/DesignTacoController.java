@@ -1,9 +1,7 @@
 package tacos.web;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,11 +14,11 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import tacos.Ingredient;
-import tacos.Ingredient.Type;
-import tacos.Taco;
-import tacos.TacoOrder;
 import tacos.data.IngredientRepository;
+import tacos.domain.Ingredient;
+import tacos.domain.Taco;
+import tacos.domain.TacoOrder;
+import tacos.domain.Ingredient.Type;
 
 @Slf4j
 @Controller

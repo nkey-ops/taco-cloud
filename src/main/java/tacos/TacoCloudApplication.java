@@ -4,10 +4,15 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
-import tacos.Ingredient.Type;
 import tacos.data.IngredientRepository;
+import tacos.data.UserRepository;
+import tacos.domain.Ingredient;
+import tacos.domain.Ingredient.Type;
 
 @SpringBootApplication
 public class TacoCloudApplication {
@@ -17,14 +22,14 @@ public class TacoCloudApplication {
 	}
 
 	@Bean
-	private InternalResourceViewResolver internalResourceViewResolver() {
+	InternalResourceViewResolver internalResourceViewResolver() {
 		InternalResourceViewResolver internalResourceViewResolver = new InternalResourceViewResolver();
 		internalResourceViewResolver.setSuffix(".html");
 		return internalResourceViewResolver;
 	}
 
 	@Bean
-	private CommandLineRunner dataLoader(IngredientRepository repo) {
+	CommandLineRunner dataLoader(IngredientRepository repo) {
 		return args -> {
 			repo.save(new Ingredient("FLTO", "Flour Tortilla", Type.WRAP));
 			repo.save(new Ingredient("COTO", "Corn Tortilla", Type.WRAP));
@@ -37,6 +42,15 @@ public class TacoCloudApplication {
 			repo.save(new Ingredient("SLSA", "Salsa", Type.SAUCE));
 			repo.save(new Ingredient("SRCR", "Sour Cream", Type.SAUCE));
 		};
+	}
+	
+
+	@Bean
+	UserDetailsService userDetailsService(UserRepository usersRepo) {
+		return username -> 
+			usersRepo.findByUsername(username)
+					 .orElseThrow(() -> 
+					 	new UsernameNotFoundException("User '" + username + "' not found"));
 	}
 
 }

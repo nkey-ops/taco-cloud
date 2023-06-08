@@ -1,4 +1,4 @@
-package tacos;
+package tacos.domain;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -7,23 +7,29 @@ import java.util.Date;
 import java.util.List;
 
 import org.hibernate.validator.constraints.CreditCardNumber;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Table;
 
+import jakarta.annotation.Generated;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import tacos.data.User;
 
 @Getter @Setter
 @AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-@Table("taco_orders")
+@NoArgsConstructor
+@Entity(name = "taco_orders")
 public class TacoOrder implements Serializable {
 	
 	@Serial
@@ -32,6 +38,7 @@ public class TacoOrder implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 	private Date placedAt;
 	
@@ -60,7 +67,11 @@ public class TacoOrder implements Serializable {
 	@Digits(integer=3, fraction=0, message="Invalid CVV")
 	private String ccCVV;
 
+	@OneToMany(cascade = CascadeType.ALL)
 	private List<Taco> tacos = new ArrayList<>();
+
+	@ManyToMany
+	private User user;
 
 	public void addTaco(Taco taco) {
 		this.tacos.add(taco);

@@ -1,8 +1,7 @@
-package tacos;
+package tacos.domain;
 
-import org.springframework.data.domain.Persistable;
-import org.springframework.data.relational.core.mapping.Table;
-
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,20 +11,15 @@ import lombok.Setter;
 @Getter @Setter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE, force = true)
-@Table("ingredients")
-public class Ingredient implements Persistable<String>{
+@Entity(name  = "ingredients")
+public class Ingredient {
 
+	@Id
 	private final String id;
 	private final String name;
 	private final Type type;
 
 	public enum Type {
 		WRAP, PROTEIN, VEGGIES, CHEESE, SAUCE
-	}
-
-	@Override
-	public boolean isNew() {
-		// TODO Auto-generated method stub
-		return false;
 	}
 }
