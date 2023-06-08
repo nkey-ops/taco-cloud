@@ -1,0 +1,5 @@
+{"properties" : [{
+	"name":"taco.orders.page-size",
+	"type":"java.lang.Integer",
+	"description": "Set the maximum number of orders returned"
+}]}
