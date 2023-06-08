@@ -1,5 +1,7 @@
 package tacos;
 
+import java.util.Arrays;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -10,9 +12,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 import tacos.data.IngredientRepository;
+import tacos.data.TacoRepository;
 import tacos.data.UserRepository;
 import tacos.domain.Ingredient;
 import tacos.domain.Ingredient.Type;
+import tacos.domain.Taco;
 
 @SpringBootApplication
 public class TacoCloudApplication {
@@ -29,19 +33,59 @@ public class TacoCloudApplication {
 	}
 
 	@Bean
-	CommandLineRunner dataLoader(IngredientRepository repo) {
+	CommandLineRunner dataLoader(
+					IngredientRepository inRepo,
+					TacoRepository tacoRepo) {
 		return args -> {
-			repo.save(new Ingredient("FLTO", "Flour Tortilla", Type.WRAP));
-			repo.save(new Ingredient("COTO", "Corn Tortilla", Type.WRAP));
-			repo.save(new Ingredient("GRBF", "Ground Beef", Type.PROTEIN));
-			repo.save(new Ingredient("CARN", "Carnitas", Type.PROTEIN));
-			repo.save(new Ingredient("TMTO", "Diced Tomatoes", Type.VEGGIES));
-			repo.save(new Ingredient("LETC", "Lettuce", Type.VEGGIES));
-			repo.save(new Ingredient("CHED", "Cheddar", Type.CHEESE));
-			repo.save(new Ingredient("JACK", "Monterrey Jack", Type.CHEESE));
-			repo.save(new Ingredient("SLSA", "Salsa", Type.SAUCE));
-			repo.save(new Ingredient("SRCR", "Sour Cream", Type.SAUCE));
-		};
+			Ingredient flourTortilla = new Ingredient(
+			"FLTO", "Flour Tortilla", Type.WRAP);
+			Ingredient cornTortilla = new Ingredient(
+			"COTO", "Corn Tortilla", Type.WRAP);
+			Ingredient groundBeef = new Ingredient(
+			"GRBF", "Ground Beef", Type.PROTEIN);
+			Ingredient carnitas = new Ingredient(
+			"CARN", "Carnitas", Type.PROTEIN);
+			Ingredient tomatoes = new Ingredient(
+			"TMTO", "Diced Tomatoes", Type.VEGGIES);
+			Ingredient lettuce = new Ingredient(
+			"LETC", "Lettuce", Type.VEGGIES);
+			Ingredient cheddar = new Ingredient(
+			"CHED", "Cheddar", Type.CHEESE);
+			Ingredient jack = new Ingredient(
+			"JACK", "Monterrey Jack", Type.CHEESE);
+			Ingredient salsa = new Ingredient(
+			"SLSA", "Salsa", Type.SAUCE);
+			Ingredient sourCream = new Ingredient(
+			"SRCR", "Sour Cream", Type.SAUCE);
+
+			inRepo.save(flourTortilla);
+			inRepo.save(cornTortilla);
+			inRepo.save(groundBeef);
+			inRepo.save(carnitas);
+			inRepo.save(tomatoes);
+			inRepo.save(lettuce);
+			inRepo.save(cheddar);
+			inRepo.save(jack);
+			inRepo.save(salsa);
+			inRepo.save(sourCream);
+
+			tacoRepo.save(
+					new Taco("Carnivore",
+							Arrays.asList(
+									flourTortilla, groundBeef, carnitas,
+									sourCream, salsa, cheddar))
+					);
+			tacoRepo.save(new Taco("Bovine Bounty",
+					Arrays.asList(
+							cornTortilla, groundBeef, cheddar,
+							jack, sourCream))
+					);
+			tacoRepo.save(new Taco("Veg-Out",
+								Arrays.asList(
+										flourTortilla, cornTortilla, tomatoes,
+										lettuce, salsa))
+					);
+			};
 	}
 	
 
