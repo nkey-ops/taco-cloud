@@ -5,6 +5,8 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.data.rest.core.annotation.RestResource;
+
 import jakarta.annotation.Generated;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -22,6 +24,7 @@ import lombok.experimental.FieldNameConstants.Exclude;
 
 @Getter @Setter
 @NoArgsConstructor
+@RestResource(rel = "tacos", path = "tacos")
 @Entity(name = "tacos")
 public class Taco implements Serializable {
 
