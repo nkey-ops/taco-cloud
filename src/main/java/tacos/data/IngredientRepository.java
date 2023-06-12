@@ -11,7 +11,5 @@ import tacos.domain.Ingredient;
 public interface IngredientRepository extends CrudRepository<Ingredient, String>{
 
 	List<Ingredient> findAll();
-
 	Optional<Ingredient> findById(String id);
-
 }

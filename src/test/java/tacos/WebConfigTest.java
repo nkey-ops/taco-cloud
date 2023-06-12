@@ -9,11 +9,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(WebConfig.class)
+@ActiveProfiles("web-test")
 public class WebConfigTest {
 
+	
+	
 	@Autowired
 	private MockMvc mockMvc;
 
@@ -21,7 +25,7 @@ public class WebConfigTest {
 	@Test
 	public void testHomePage() throws Exception {
 		mockMvc.perform(get("/"))
-			      .andExpect(status().isOk())
+			      .a2ndExpect(status().isOk())
 			      .andExpect(view().name("home"))
 			      .andExpect(content().string(
 			          containsString("Welcome to...")));

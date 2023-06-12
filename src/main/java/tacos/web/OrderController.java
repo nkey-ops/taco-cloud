@@ -24,8 +24,9 @@ import org.springframework.web.bind.support.SessionStatus;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import tacos.data.OrderRepository;
-import tacos.data.User;
+import tacos.domain.OrderProps;
 import tacos.domain.TacoOrder;
+import tacos.domain.User;
 
 @Slf4j
 @Controller

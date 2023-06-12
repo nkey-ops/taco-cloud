@@ -6,9 +6,11 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 import tacos.data.IngredientRepository;
@@ -17,6 +19,7 @@ import tacos.data.UserRepository;
 import tacos.domain.Ingredient;
 import tacos.domain.Ingredient.Type;
 import tacos.domain.Taco;
+import tacos.domain.User;
 
 @SpringBootApplication
 public class TacoCloudApplication {
@@ -33,9 +36,12 @@ public class TacoCloudApplication {
 	}
 
 	@Bean
+	@Profile("!web-test")
 	CommandLineRunner dataLoader(
 					IngredientRepository inRepo,
-					TacoRepository tacoRepo) {
+					TacoRepository tacoRepo,
+					UserRepository userRepo,
+					PasswordEncoder encoder) {
 		return args -> {
 			Ingredient flourTortilla = new Ingredient(
 			"FLTO", "Flour Tortilla", Type.WRAP);
@@ -78,14 +84,20 @@ public class TacoCloudApplication {
 			tacoRepo.save(new Taco("Bovine Bounty",
 					Arrays.asList(
 							cornTortilla, groundBeef, cheddar,
-							jack, sourCream))
+						jack, sourCream))
 					);
 			tacoRepo.save(new Taco("Veg-Out",
 								Arrays.asList(
 										flourTortilla, cornTortilla, tomatoes,
 										lettuce, salsa))
 					);
-			};
+		
+			userRepo.save(
+				new User("habuma", encoder.encode("password"), "ROLE_ADMIN"));
+			userRepo.save(
+				new User("tacochef", encoder.encode("password"), "ROLE_ADMIN"));
+		};
+
 	}
 	
 

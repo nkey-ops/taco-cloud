@@ -18,7 +18,7 @@ public class SecurityConfig {
 	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		return http
                 .authorizeHttpRequests()
-                .requestMatchers("/design", "/orders").hasRole("USER")
+                .requestMatchers("/design", "/orders").permitAll()
                 .requestMatchers("/", "/**").permitAll()
                 .and()
                 .formLogin(login -> login
