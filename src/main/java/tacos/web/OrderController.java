@@ -49,9 +49,11 @@ public class OrderController {
 	public String ordersForUser(
 			@AuthenticationPrincipal User user, Model model) {
 		Pageable pageable = PageRequest.of(0, orderProps.getPageSize());
-		model.addAttribute("order", 
+		
+		model.addAttribute("orders", 
 				orderRepo.findByUserOrderByPlacedAtDesc(user, pageable));
 		
+		log.info("Orders requested: {}", pageable);
 		return "orderList";
 	}
 
@@ -72,7 +74,7 @@ public class OrderController {
 		log.info("Order submitted: {}", order);
 		sessionStatus.setComplete();
 		
-		return "redirect:/";
+		return "redirect:/orders";
 	}
 
 	@PatchMapping(path="/{orderId}", consumes="application/json")

@@ -1,6 +1,7 @@
 package tacos;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -13,11 +14,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 import tacos.data.IngredientRepository;
+import tacos.data.OrderRepository;
 import tacos.data.TacoRepository;
 import tacos.data.UserRepository;
 import tacos.domain.Ingredient;
 import tacos.domain.Ingredient.Type;
 import tacos.domain.Taco;
+import tacos.domain.TacoOrder;
 import tacos.domain.User;
 
 @SpringBootApplication
@@ -40,6 +43,7 @@ public class TacoCloudApplication {
 					IngredientRepository inRepo,
 					TacoRepository tacoRepo,
 					UserRepository userRepo,
+                    OrderRepository orderRepo,
 					PasswordEncoder encoder) {
 		return args -> {
 			Ingredient flourTortilla = new Ingredient(
@@ -63,38 +67,53 @@ public class TacoCloudApplication {
 			Ingredient sourCream = new Ingredient(
 			"SRCR", "Sour Cream", Type.SAUCE);
 
-			inRepo.save(flourTortilla);
-			inRepo.save(cornTortilla);
-			inRepo.save(groundBeef);
-			inRepo.save(carnitas);
-			inRepo.save(tomatoes);
-			inRepo.save(lettuce);
-			inRepo.save(cheddar);
-			inRepo.save(jack);
-			inRepo.save(salsa);
-			inRepo.save(sourCream);
+			flourTortilla = inRepo.save(flourTortilla);
+			cornTortilla = inRepo.save(cornTortilla);
+			groundBeef = inRepo.save(groundBeef);
+			carnitas   = inRepo.save(carnitas);
+			tomatoes   = inRepo.save(tomatoes);
+			lettuce    = inRepo.save(lettuce);
+			cheddar    = inRepo.save(cheddar);
+			jack       = inRepo.save(jack);
+			salsa      = inRepo.save(salsa);
+			sourCream = inRepo.save(sourCream);
 
-			tacoRepo.save(
-					new Taco("Carnivore",
-							Arrays.asList(
-									flourTortilla, groundBeef, carnitas,
-									sourCream, salsa, cheddar))
-					);
+            Taco taco = tacoRepo.save( 
+                    new Taco("Carnivore",
+                            Arrays.asList(
+                                    flourTortilla, groundBeef, carnitas,
+                                    sourCream, salsa, cheddar)));
+    
 			tacoRepo.save(new Taco("Bovine Bounty",
 					Arrays.asList(
 							cornTortilla, groundBeef, cheddar,
 						jack, sourCream))
 					);
+
 			tacoRepo.save(new Taco("Veg-Out",
 								Arrays.asList(
 										flourTortilla, cornTortilla, tomatoes,
 										lettuce, salsa))
 					);
 		
-			userRepo.save(
-				new User("habuma", encoder.encode("password"), "ROLE_ADMIN"));
+			User hab = new User("habuma", encoder.encode("password"), "ROLE_ADMIN");
+                userRepo.save(hab);
 			userRepo.save(
 				new User("tacochef", encoder.encode("password"), "ROLE_ADMIN"));
+
+            TacoOrder order =  new TacoOrder(
+                    "Colorado", 
+                    "Green Line",
+                    "Kansas",
+                    "Colorado", 
+                    "20202",
+                    "12312312311231",
+                    "10/25",
+                    "123", userRepo.findById(hab.getId()).get());
+
+            orderRepo.save(order);
+            order.addTaco(taco);
+            orderRepo.save(order);
 		};
 
 	}

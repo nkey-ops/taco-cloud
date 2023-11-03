@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns="http:/ /www.w4.org/1999/xhtml"
+	xmlns:th="http:/ /www.thymeleaf.org">
+<head>
+<title>Taco Cloud</title>
+<link rel="stylesheet" th:href="@{/styles.css}" />
+</head>
+<body>
+		<img th:src="@{/images/TacoCloud.png}" />
+		<h3>Your orders</h3>
+        <p th:if="${#lists.isEmpty(orders)}">There are no orders</p>
+		<ul>
+            <li th:each="order: ${orders}">
+                <span th:text="'Delivery Name: ' + ${order.deliveryName}">order delivery name</span>
+                <br/>
+				<span th:text="'Street: ' + ${order.deliveryStreet}">order street</span>
+                <br/>
+				<span th:text="'City: ' + ${order.deliveryCity}">order City</span>
+                <br/>
+				<span th:text="'State: ' + ${order.deliveryState}">order State</span>
+                <br/>
+				<span th:text="'Zip: ' + ${order.deliveryZip}">order Zip</span>
+                <br/>
+				<span th:text="'CC number: ' + ${order.ccNumber}">order CC number</span>
+                <br/>
+                <br/>
+
+                <ul>
+                    <li th:each="taco: ${order.tacos}">
+                        <span th:text="${taco.name}">taco name</span>
+                        <br />
+                        <ul>
+                            <li th:each="in: ${taco.ingredients}">
+                                <span th:text="${in.type} + ': '">ingredient type</span>
+                                <span th:text="${in.name}">ingredient name</span>
+                            </li>
+                        </ul>
+                        <br />
+                    </li>
+                </ul>
+                <br />
+			</li>
+		</ul>
+        <br />
+        <a th:href="@{/design}" id="another">Design a taco</a>
+</body>
+</html>
