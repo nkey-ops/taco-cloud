@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
@@ -36,7 +35,7 @@ public class TacoCloudApplication {
 	}
 
 	@Bean
-	@Profile("!web-test")
+	@Profile("!test")
 	CommandLineRunner dataLoader(
 					IngredientRepository inRepo,
 					TacoRepository tacoRepo,
@@ -102,6 +101,7 @@ public class TacoCloudApplication {
 	
 
 	@Bean
+    @Profile("!test")
 	UserDetailsService userDetailsService(UserRepository usersRepo) {
 		return username -> 
 			usersRepo.findByUsername(username)

@@ -18,12 +18,13 @@ public class SecurityConfig {
 	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		return http
                 .authorizeHttpRequests()
-                .requestMatchers("/design", "/orders").permitAll()
-                .requestMatchers("/", "/**").permitAll()
+                .requestMatchers("/login", "/register", "/").permitAll()
+                .requestMatchers("/images/**").permitAll()
+                .requestMatchers("/orders", "/orders/**", "/design").hasRole("USER")
                 .and()
                 .formLogin(login -> login
                         .loginPage("/login")
-                        .defaultSuccessUrl("/desing"))
+                        .defaultSuccessUrl("/design"))
                 .build();
 	}
 

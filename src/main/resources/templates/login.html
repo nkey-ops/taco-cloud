@@ -7,14 +7,15 @@
 <body>
 	<h1>Login</h1>
 	<img th:src="@{/images/TacoCloud.png}" />
-	<div th:if="${error}">Unable to login. Check your username and
-		password.</div>
+    <div th:if="${param.error}">Unable to login. Check your username and
+        password.</div>
 	<p>
 		New here? Click
 		<a th:href="@{/register}">here</a>
 		to register.
 	</p>
 	<form method="POST" th:action="@{/login}" id="loginForm">
+
 		<label for="username">Username: </label>
 		<input type="text" name="username" id="username" />
 		<br />
@@ -22,6 +23,6 @@
 		<input type="password" name="password" id="password" />
 		<br />
 		<input type="submit" value="Login" />
-	</form
+    </form>
 </body>
 </html>

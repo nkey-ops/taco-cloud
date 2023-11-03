@@ -16,9 +16,9 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import tacos.data.IngredientRepository;
 import tacos.domain.Ingredient;
+import tacos.domain.Ingredient.Type;
 import tacos.domain.Taco;
 import tacos.domain.TacoOrder;
-import tacos.domain.Ingredient.Type;
 
 @Slf4j
 @Controller
@@ -62,6 +62,9 @@ public class DesignTacoController {
 			@Valid Taco taco, Errors errors, 
 			@ModelAttribute TacoOrder tacoOrder) {
 		
+		log.info("Processing taco: {}", taco);
+        
+
 		if(errors.hasErrors()) {
 			return "design";
 		}
