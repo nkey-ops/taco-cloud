@@ -1,5 +1,7 @@
 package tacos.web;
 
+import java.util.Optional;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,7 +23,6 @@ import org.springframework.web.bind.support.SessionStatus;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import tacos.data.OrderRepository;
-import tacos.domain.OrderProps;
 import tacos.domain.TacoOrder;
 import tacos.domain.User;
 
@@ -45,13 +46,21 @@ public class OrderController {
 		return "orderForm";
 	}
 	
+	@GetMapping("/{id}")
+	public TacoOrder getOrder(@PathVariable long id) {
+        Optional<TacoOrder> order = orderRepo.findById(id);
+		if (order.isEmpty()) 
+            throw new RuntimeException("Order with id: " + id + " wasn't found"); 
+
+        return order.get();
+	}
+
 	@GetMapping
 	public String ordersForUser(
 			@AuthenticationPrincipal User user, Model model) {
 		Pageable pageable = PageRequest.of(0, orderProps.getPageSize());
-		
-		model.addAttribute("orders", 
-				orderRepo.findByUserOrderByPlacedAtDesc(user, pageable));
+        model.addAttribute("orders", 
+                orderRepo.findByUserOrderByPlacedAtDesc(user, pageable));
 		
 		log.info("Orders requested: {}", pageable);
 		return "orderList";
@@ -100,8 +109,6 @@ public class OrderController {
 		return ResponseEntity.noContent().build();
 	}
 }
-
-
 
 
 

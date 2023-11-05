@@ -8,9 +8,9 @@ import org.springframework.data.repository.CrudRepository;
 import tacos.domain.TacoOrder;
 import tacos.domain.User;
 
-public interface OrderRepository extends CrudRepository<TacoOrder, Long>{
+public interface OrderRepository extends CrudRepository<TacoOrder, Long> {
 
-	List<TacoOrder> findByUserOrderByPlacedAtDesc(User user, Pageable pageable);
+    List<TacoOrder> findByUserOrderByPlacedAtDesc(User user, Pageable pageable);
 
-	boolean existsById(Long orderId);
+    boolean existsById(Long orderId);
 }
