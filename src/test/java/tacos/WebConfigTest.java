@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import tacos.conf.WebConfig;
 import tacos.security.SecurityConfig;
 
 @WebMvcTest(WebConfig.class)
