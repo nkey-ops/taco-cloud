@@ -23,6 +23,7 @@ import org.springframework.web.bind.support.SessionStatus;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import tacos.data.OrderRepository;
+import tacos.data.TacoRepository;
 import tacos.domain.TacoOrder;
 import tacos.domain.User;
 
@@ -33,13 +34,16 @@ import tacos.domain.User;
 public class OrderController {
 
 	private final OrderRepository orderRepo;
-	private final OrderProps orderProps;
+    private final TacoRepository tacoRepo;
+    private final OrderProps orderProps;
 
-	public OrderController(OrderRepository orderRepository,
-							OrderProps orderProps) {
-		this.orderRepo = orderRepository;
-		this.orderProps = orderProps;
-	}
+
+    public OrderController(OrderRepository orderRepo, 
+            TacoRepository tacoRepo, OrderProps orderProps) {
+        this.orderRepo = orderRepo;
+        this.tacoRepo = tacoRepo;
+        this.orderProps = orderProps;
+    }
 
 	@GetMapping("/current")
 	public String orderForm() {
@@ -94,10 +98,22 @@ public class OrderController {
 		TacoOrder order = orderRepo.findById(orderId)
 				.orElseThrow(() -> new RuntimeException("Order wasn't found"));
 
-		BeanUtils.copyProperties(patch, order);
 
-		
+
+        BeanUtils.copyProperties(patch, order);
 		return orderRepo.save(order);
+	}
+
+	@PatchMapping(path="/{orderId}/{tacoId}", consumes="application/json")
+	public ResponseEntity<?> removeTaco(
+			@PathVariable("orderId") Long orderId,
+			@PathVariable("tacoId") Long tacoId) {
+
+        if(!orderRepo.existsById(orderId) 
+                || !tacoRepo.existsById(tacoId))
+                return ResponseEntity.notFound().build();
+
+		return ResponseEntity.noContent().build() ;
 	}
 
 	@DeleteMapping("/{orderId}")

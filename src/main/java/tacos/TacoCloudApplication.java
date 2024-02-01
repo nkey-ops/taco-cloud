@@ -8,16 +8,14 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 @SpringBootApplication
 public class TacoCloudApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(TacoCloudApplication.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(TacoCloudApplication.class, args);
+  }
 
-    @Bean
-    InternalResourceViewResolver internalResourceViewResolver() {
-        InternalResourceViewResolver internalResourceViewResolver = 
-            new InternalResourceViewResolver();
-        internalResourceViewResolver.setSuffix(".html");
-        return internalResourceViewResolver;
-    }
-
+  @Bean
+  InternalResourceViewResolver internalResourceViewResolver() {
+    InternalResourceViewResolver internalResourceViewResolver = new InternalResourceViewResolver();
+    internalResourceViewResolver.setSuffix(".html");
+    return internalResourceViewResolver;
+  }
 }
