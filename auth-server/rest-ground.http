@@ -1,0 +1,24 @@
+POST http://localhost:9000/login
+Content-Type: application/x-www-form-urlencoded
+
+--data-urlencode username=habuma
+--data-urlencode password=password
+
+GET http://localhost:9000/error
+Cookie: JSESSIONID=BACDF0E59729996557D3B0824F66C5F1
+GET http://localhost:9000/
+
+GET http://localhost:9000/oauth2/authorize?response_type=code&client_id=taco-admin-client&scope=writeIngredients+deleteIngredients
+Content-Type: application/x-www-form-urlencoded
+Cookie: JSESSIONID=BACDF0E59729996557D3B0824F66C5F1
+
+
+
+GET http://localhost:9000/oauth2/token
+Content-type: application/x-www-form-urlencoded
+Cookie: JSESSIONID=FA03355338F31A68DD8E7B55912136D1
+
+-d grant_type=authorization_code
+-d redirect_uri=http://127.0.0.1:90r0/login/oauth2/code/taco-admin-client
+-d code=64MZZasl9kAUeg9kN4VNqu4q-8xjMF5XaqJST0rgnzrDhtm_zA_wCKk_xrs1ikn7DIYmwewavGEe8y2tI35e_YrR1yPBrxJiXrI-QonMXxpGZp4XodOVTbvvitESLSzo
+-u taco-admin-client:secret
