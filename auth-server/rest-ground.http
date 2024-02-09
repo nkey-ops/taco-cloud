@@ -4,21 +4,51 @@ Content-Type: application/x-www-form-urlencoded
 --data-urlencode username=habuma
 --data-urlencode password=password
 
-GET http://localhost:9000/error
-Cookie: JSESSIONID=BACDF0E59729996557D3B0824F66C5F1
-GET http://localhost:9000/
+{%
+  _G.gas_key("Set-Cookie", "JSESSIONID=.-;", context, "JID")
+%}
 
-GET http://localhost:9000/oauth2/authorize?response_type=code&client_id=taco-admin-client&scope=writeIngredients+deleteIngredients
-Content-Type: application/x-www-form-urlencoded
-Cookie: JSESSIONID=BACDF0E59729996557D3B0824F66C5F1
+GET http://localhost:9000/oauth2/authorize?response_type=code&client_id=taco-admin-client&'scope=writeIngredients'
+Cookie: {{JID}} 
+
+POST http://localhost:9000/oauth2/authorize
+#Content-type: application/x-www-form-urlencoded
+Cookie: {{JID}}
+
+-d client_id=taco-admin-client
+-d state=OF44YKJJUV4GqMlexC-28_A8SgvHe6hkEALK_NfyiWA=
+-d scope=writeIngredients
 
 
-
-GET http://localhost:9000/oauth2/token
+POST http://localhost:9000/oauth2/token
 Content-type: application/x-www-form-urlencoded
-Cookie: JSESSIONID=FA03355338F31A68DD8E7B55912136D1
+Cookie: {{JID}} 
 
--d grant_type=authorization_code
--d redirect_uri=http://127.0.0.1:90r0/login/oauth2/code/taco-admin-client
--d code=64MZZasl9kAUeg9kN4VNqu4q-8xjMF5XaqJST0rgnzrDhtm_zA_wCKk_xrs1ikn7DIYmwewavGEe8y2tI35e_YrR1yPBrxJiXrI-QonMXxpGZp4XodOVTbvvitESLSzo
 -u taco-admin-client:secret
+-d grant_type=authorization_code
+-d redirect_uri=http://127.0.0.1:9000/login/oauth2/code/taco-admin-client
+-d code=ViZE9mP_o4P71xDwCAWrIGTskG9yr_GJFffbmiFHCRHRQ8t9Bb8y6NyXJycskxiZiNyGb4X8Ee0EHRt12EXjmOgsMSyp3KG7sRjeMY3vpgtjmvMRMAg4t0H7NF2hVN70
+
+
+
+POST http://localhost:9000/oauth2/token
+Content-type: application/x-www-form-urlencoded
+
+-d grant_type=refresh_token&refresh_token=eyJraWQiOiI5ZGE4MzEwNi0wODRhLTQxNGEtODZkMi1jYjBmOTBjNWZlZjUiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJoYWJ1bWEiLCJhdWQiOiJ0YWNvLWFkbWluLWNsaWVudCIsIm5iZiI6MTcwNzQwODkyNywiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo5MDAwIiwiZXhwIjoxNzA3NDA5MjI3LCJpYXQiOjE3MDc0MDg5MjcsImp0aSI6IjBkZWQ0YjNlLTRiMjctNDNhNS1iM2QwLWVlMTI5MGFlYzdmMiJ9.CGO3BpUuKg7l_2p8fB0bLPbodTmLfjgdzQvxY6W5YWOIxC3dRyraUIZBJ6IliKCgn2caocq1NlKwDqno1qYsUjet10512jjzBrRFoMHSKSMNrWS9IEZpTJMP4KiNCxqrX6kRssqARG_RCgIS0d1Uvt_yHq0sXs6Y9EFPWFGyX-IS3cEczFuvuL5b0SNsCM1mQLkbI1ef83gKrMkUCCrxva8vt7U9n6AXSmj8RY_bSWbF5ckN8MGLZyuKBJYIoBDaIFpqgBjvw1QzxsV5tUNgEzOlhSEfbSr20rgWUTdspJTVgmDRRIhPckW1YEYTbPe0bSNUip82ri6zFOI5pCvlUw
+-u taco-admin-client:secret
+
+
+#{%
+#
+#local body = context.result.body
+#
+#local s, e = string.find(body, "value=\".*?=", 1, true )
+#print(string.sub(body, s, e))
+#%}
+
+
+
+#  "access_token": "eyJraWQiOiI5ZGE4MzEwNi0wODRhLTQxNGEtODZkMi1jYjBmOTBjNWZlZjUiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJoYWJ1bWEiLCJhdWQiOiJ0YWNvLWFkbWluLWNsaWVudCIsIm5iZiI6MTcwNzQwODkyNywiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo5MDAwIiwiZXhwIjoxNzA3NDA5MjI3LCJpYXQiOjE3MDc0MDg5MjcsImp0aSI6IjBkZWQ0YjNlLTRiMjctNDNhNS1iM2QwLWVlMTI5MGFlYzdmMiJ9.CGO3BpUuKg7l_2p8fB0bLPbodTmLfjgdzQvxY6W5YWOIxC3dRyraUIZBJ6IliKCgn2caocq1NlKwDqno1qYsUjet10512jjzBrRFoMHSKSMNrWS9IEZpTJMP4KiNCxqrX6kRssqARG_RCgIS0d1Uvt_yHq0sXs6Y9EFPWFGyX-IS3cEczFuvuL5b0SNsCM1mQLkbI1ef83gKrMkUCCrxva8vt7U9n6AXSmj8RY_bSWbF5ckN8MGLZyuKBJYIoBDaIFpqgBjvw1QzxsV5tUNgEzOlhSEfbSr20rgWUTdspJTVgmDRRIhPckW1YEYTbPe0bSNUip82ri6zFOI5pCvlUw",
+#  "refresh_token": "3yZEd4nTdJsx88Hga7sWqTok46DyfPKGrJUNQYTeutqO7_iPVfuuyy8EmwkdmhuViwF1HjSbenWfiWWgihhUH79j5JUWfG3Mm4pjCJlDmdaUQmUNnFGM0MfPSgUSSscv",
+#  "token_type": "Bearer",
+#  "expires_in": 299
