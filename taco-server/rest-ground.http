@@ -1,0 +1,118 @@
+POST http://localhost:8080/login
+
+ --data-urlencode username=habuma
+ --data-urlencode password=password 
+
+{%
+ _G.gas_header("Set-Cookie", "JSESSIONID=.-;", context, "JID")
+%}
+
+GET http://localhost:8080/login?error
+Cookie: {{JID}}
+##-u habuma:password
+
+POST localhost:8080/login
+Content-Type: application/x-www-form-urlencoded
+
+
+--data-urlencode username=habuma
+--data-urlencode password=password
+
+GET localhost:8080/
+Origin: http://localhost:8080
+Accept-Language: en-US,en;q=0.5
+
+GET localhost:8080/design
+Cookie: {{JID}}
+
+GET http://localhost:8080/api/tacos?recent
+Cookie: {{JID}}
+
+GET http://localhost:8080/api/ingredients
+Cookie: {{JID}}
+
+DELETE http://localhost:8080/api/tacos/2/ingredients/CHED
+Cookie: JSESSIONID={{JID}}
+
+GET http://localhost:8080/data-api/ingredients
+Cookie: {{JID}}
+
+#http://localhost:8080/data-api
+
+POST http://localhost:8080/api/ingredients
+##Cookie: JSESSIONID={{JID}}
+Content-Type: application/json
+Authorization: Bearer {{TOKEN}}
+
+{
+  "id": "null",
+  "name": "TORT",
+  "type": "WRAP"
+}
+
+DELETE localhost:8080/api/ingredients/null
+Authorization: Bearer {{TOKEN}}
+
+
+POST localhost:8080/ingredients
+Content-type: application/json
+
+{"id":"FISH","name":"Stinky Fish", "type":"PROTEIN"}
+
+
+POST http://localhost:8080/api/tacos
+Content-Type: application/json
+
+{
+    "name": "burger",
+    "ingredients" :  [
+        {
+            "id": "COTO",
+            "name": "Corn Tortilla",
+            "type": "WRAP"
+        }
+    ]
+
+}
+
+GET https://www.google.com/
+#GET localhost:8080/api/taco?recent
+
+    "id": 1,
+    "createdAt": "2023-11-07T16:04:44.286+00:00",
+    "name": "Carnivore",
+    "ingredients": [
+      {
+        "id": "FLTO",
+        "name": "Flour Tortilla",
+        "type": "WRAP"
+      },
+      {
+        "id": "GRBF",
+        "name": "Ground Beef",
+        "type": "PROTEIN"
+      },
+      {
+        "id": "CARN",
+        "name": "Carnitas",
+        "type": "PROTEIN"
+      },
+      {
+        "id": "SRCR",
+        "name": "Sour Cream",
+        "type": "SAUCE"
+      },
+      {
+        "id": "SLSA",
+        "name": "Salsa",
+        "type": "SAUCE"
+      },
+      {
+        "id": "CHED",
+        "name": "Cheddar",
+        "type": "CHEESE"
+      }
+
+    ]
+  }
+]
