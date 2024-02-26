@@ -2,6 +2,8 @@ package tacos.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,15 +20,23 @@ public class SecurityConfig {
 
   @Bean
   SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+  
+
+
     return http.csrf(c -> c.disable())
-        .authorizeHttpRequests()
-        .requestMatchers("/login", "/error", "/register", "/", "/images/**")
-        .anonymous()
-        .requestMatchers("/**")
-        .hasAnyRole("USER", "ADMIN")
-        .and()
-        .formLogin(
-            login -> login.loginPage("/login").defaultSuccessUrl("/design").failureUrl("/error"))
+        .authorizeHttpRequests(
+            a ->
+                a.requestMatchers("/login", "/error", "/register", "/", "/images/**")
+                    .anonymous()
+                .requestMatchers(HttpMethod.POST, "/api/ingredients")
+                  .hasAuthority("SCOPE_writeIngredients")
+                .requestMatchers(HttpMethod.DELETE, "/api/ingredients/**")
+                  .hasAuthority("SCOPE_deleteIngredients")
+                .requestMatchers("/**")
+                  .hasAnyRole("USER", "ADMIN"))
+
+        .formLogin(login -> login.loginPage("/login").defaultSuccessUrl("/design"))
+        .oauth2ResourceServer(o -> o.jwt(Customizer.withDefaults()))
         .build();
   }
 }
