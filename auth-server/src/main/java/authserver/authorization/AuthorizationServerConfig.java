@@ -1,6 +1,5 @@
 package authserver.authorization;
 
-import authserver.UserRepository;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
@@ -13,13 +12,10 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.UUID;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
@@ -32,17 +28,16 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
 @Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
-final class AuthorizationServerConfig {
+public class AuthorizationServerConfig {
 
   @Bean
   @Order(1)
-  private SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http)
-      throws Exception {
+  SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
 
     OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
     return http.oauth2ResourceServer(
@@ -53,37 +48,31 @@ final class AuthorizationServerConfig {
 
   @Bean
   @Order(2)
-  private SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-    return http.authorizeHttpRequests(r -> r.anyRequest().authenticated())
+  SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+    return http.authorizeHttpRequests(
+            r -> r.requestMatchers("/actuator/**").permitAll().anyRequest().authenticated())
         .formLogin(Customizer.withDefaults())
         .csrf(c -> c.disable())
         .build();
   }
 
   @Bean
-  private UserDetailsService userDetailsManager(UserRepository userRepository) {
-    return username -> {
-      var user = userRepository.findByName(username);
-
-      if (user.isEmpty()) throw new UsernameNotFoundException("User wasn't found: " + username);
-
-      System.out.println(user.get().getName());
-      return user.get();
-    };
+  InMemoryUserDetailsManager inMemoryUserDetailsManager() {
+    return new InMemoryUserDetailsManager();
   }
 
   @Bean
-  private PasswordEncoder passwordEncoder() {
+  PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
   }
 
   @Bean
-  private AuthorizationServerSettings authoricationSErverSettings() {
+  AuthorizationServerSettings authoricationServerSettings() {
     return AuthorizationServerSettings.builder().build();
   }
 
   @Bean
-  private RegisteredClientRepository registeredClientRepository(PasswordEncoder passwordEncoder) {
+  RegisteredClientRepository registeredClientRepository(PasswordEncoder passwordEncoder) {
     RegisteredClient registeredClient =
         RegisteredClient.withId(UUID.randomUUID().toString())
             .clientId("taco-admin-client")
@@ -102,7 +91,7 @@ final class AuthorizationServerConfig {
   }
 
   @Bean
-  private JWKSource<SecurityContext> jwkSource() throws NoSuchAlgorithmException {
+  JWKSource<SecurityContext> jwkSource() throws NoSuchAlgorithmException {
     RSAKey rsaKey = generateRsa();
     JWKSet jwkSet = new JWKSet(rsaKey);
     return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
@@ -125,7 +114,7 @@ final class AuthorizationServerConfig {
   }
 
   @Bean
-  private JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
+  JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
     return OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource);
   }
 }
