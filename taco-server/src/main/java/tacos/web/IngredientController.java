@@ -11,34 +11,34 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import tacos.data.IngredientRepository;
 import tacos.domain.Ingredient;
+import tacos.service.IngridientsService;
 
 @RestController
 @RequestMapping(path = "/api/ingredients", produces = "application/json")
 @CrossOrigin(origins = "http://localhost:8080")
 public class IngredientController {
-  private IngredientRepository repo;
+  private IngridientsService ingridientsService;
 
   @Autowired
-  public IngredientController(IngredientRepository repo) {
-    this.repo = repo;
+  public IngredientController(IngridientsService ingridientsService) {
+    this.ingridientsService = ingridientsService;
   }
 
   @GetMapping
   public Iterable<Ingredient> allIngredients() {
-    return repo.findAll();
+    return ingridientsService.get();
   }
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public Ingredient saveIngredient(@RequestBody Ingredient ingredient) {
-    return repo.save(ingredient);
+    return ingridientsService.save(ingredient);
   }
 
   @DeleteMapping("/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteIngredient(@PathVariable("id") String ingredientId) {
-    repo.deleteById(ingredientId);
+    ingridientsService.delete(ingredientId);
   }
 }

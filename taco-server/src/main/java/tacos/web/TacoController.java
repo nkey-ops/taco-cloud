@@ -2,6 +2,7 @@ package tacos.web;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -17,30 +18,30 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import tacos.data.TacoRepository;
 import tacos.domain.Taco;
+import tacos.service.TacoService;
 
 @RestController
 @RequestMapping(path = "/api/tacos", produces = MediaType.APPLICATION_JSON_VALUE)
 @CrossOrigin("http://localhost:8080")
 public class TacoController {
-  private TacoRepository tacoRepo;
+  private final TacoService tacoService;
 
-  public TacoController(TacoRepository tacoRepo) {
-    this.tacoRepo = tacoRepo;
+  public TacoController(TacoService tacoService) {
+    this.tacoService = tacoService;
   }
 
   @GetMapping(params = "recent")
-  public Iterable<Taco> recentTacos() {
+  public List<Taco> recentTacos() {
     PageRequest page = PageRequest.of(0, 12, Sort.by("createdAt").descending());
     PageRequest.of(1, 2);
 
-    return tacoRepo.findAll(page).getContent();
+    return tacoService.get(page);
   }
 
   @GetMapping("/{id}")
   public ResponseEntity<?> tacoById(@PathVariable("id") Long id) {
-    Optional<Taco> optTaco = tacoRepo.findById(id);
+    Optional<Taco> optTaco = tacoService.get(id);
 
     return optTaco.isPresent()
         ? ResponseEntity.ok(optTaco.get())
@@ -50,15 +51,15 @@ public class TacoController {
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
   public Taco postTaco(@RequestBody Taco taco) {
-    
-    return tacoRepo.save(taco);
+
+    return tacoService.save(taco);
   }
 
   @DeleteMapping("/{tacoId}/ingredients/{ingredientId}")
   public ResponseEntity<?> removeIngredient(
       @PathVariable("tacoId") long tacoId, @PathVariable("ingredientId") String ingredientId) {
 
-    Optional<Taco> tacoOpt = tacoRepo.findById(tacoId);
+    Optional<Taco> tacoOpt = tacoService.get(tacoId);
     if (tacoOpt.isEmpty()) return ResponseEntity.status(NOT_FOUND).body("Taco wasn't found");
 
     Taco taco = tacoOpt.get();
@@ -71,7 +72,7 @@ public class TacoController {
     if (size == taco.getIngredients().size())
       return ResponseEntity.status(NOT_FOUND).body("Ingredient wasn't found");
 
-    tacoRepo.save(taco);
+    tacoService.save(taco);
     return ResponseEntity.noContent().build();
   }
 }

@@ -20,23 +20,24 @@ public class SecurityConfig {
 
   @Bean
   SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-  
-
-
     return http.csrf(c -> c.disable())
         .authorizeHttpRequests(
             a ->
                 a.requestMatchers("/login", "/error", "/register", "/", "/images/**")
                     .anonymous()
-                .requestMatchers(HttpMethod.POST, "/api/ingredients")
-                  .hasAuthority("SCOPE_writeIngredients")
-                .requestMatchers(HttpMethod.DELETE, "/api/ingredients/**")
-                  .hasAuthority("SCOPE_deleteIngredients")
-                .requestMatchers("/**")
-                  .hasAnyRole("USER", "ADMIN"))
-
+                    .requestMatchers(HttpMethod.GET, "/api/ingredients")
+                    .hasAuthority("SCOPE_readIngredients")
+                    .requestMatchers(HttpMethod.POST, "/api/ingredients")
+                    .hasAuthority("SCOPE_writeIngredients")
+                    .requestMatchers(HttpMethod.DELETE, "/api/ingredients/**")
+                    .hasAuthority("SCOPE_deleteIngredients")
+                    .requestMatchers("/actuator/**")
+                    .permitAll()
+                    .requestMatchers("/**")
+                    .hasAnyRole("USER", "ADMIN"))
         .formLogin(login -> login.loginPage("/login").defaultSuccessUrl("/design"))
-        .oauth2ResourceServer(o -> o.jwt(Customizer.withDefaults()))
+        .oauth2Login(l -> l.loginPage("/oauth2/authorization/taco-admin-client"))
+        .oauth2Client(Customizer.withDefaults())
         .build();
   }
 }

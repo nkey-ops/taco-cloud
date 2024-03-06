@@ -1,0 +1,31 @@
+spring:
+  profiles:
+    active: dev
+  data:
+    rest:
+      base-path: /data-api
+  datasource:
+    generate-unique-name: false
+    name: tacocloud
+  h2:
+    console:
+      enabled: "true"
+  security:
+    oauth2:
+       client:
+         registration:
+           taco-admin-client:
+             provider: tacocloud
+             client-id: taco-admin-client
+             client-secret: secret
+             authorization-grant-type: authorization_code
+             scope: writeIngredients,deleteIngredients,readIngredients
+             redirect-uri: http://localhost:9000/login/oauth2/code/{registrationId}
+         provider:
+           tacocloud:
+             issuer-uri: http://localhost:9000
+
+logging:
+  level:
+    org:
+      springframework: TRACE

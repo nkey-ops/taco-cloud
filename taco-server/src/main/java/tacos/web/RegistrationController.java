@@ -5,17 +5,17 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import tacos.data.UserRepository;
 import tacos.domain.RegistrationForm;
+import tacos.service.UserService;
 
 @Controller
 @RequestMapping("/register")
 public class RegistrationController {
-  private UserRepository userRepo;
   private PasswordEncoder passwordEncoder;
+  private UserService userService;
 
-  public RegistrationController(UserRepository userRepo, PasswordEncoder passwordEncoder) {
-    this.userRepo = userRepo;
+  public RegistrationController(UserService userService, PasswordEncoder passwordEncoder) {
+    this.userService = userService;
     this.passwordEncoder = passwordEncoder;
   }
 
@@ -26,7 +26,7 @@ public class RegistrationController {
 
   @PostMapping
   public String processRegistration(RegistrationForm form) {
-    userRepo.save(form.toUser(passwordEncoder));
+    userService.save(form.toUser(passwordEncoder));
     return "redirect:/login";
   }
 }
