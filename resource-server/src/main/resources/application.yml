@@ -1,0 +1,15 @@
+server:
+  port: 9999
+
+logging:
+  level:
+    org:
+      springframework: TRACE
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+

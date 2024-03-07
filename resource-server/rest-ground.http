@@ -1,0 +1,31 @@
+POST localhost:9999/login
+
+-d username=admin
+-d password=password
+
+{%
+    _G.gas_header("Set-Cookie", "JSESSIONID.-;", context, "JID_R")
+%}
+
+POST localhost:9999/login
+
+-d username=user
+-d password=password
+
+{%
+    _G.gas_header("Set-Cookie", "JSESSIONID.-;", context, "JID_R")
+%}
+
+GET localhost:9999/ingredients
+Cookie: {{JID_R}}
+
+PUT localhost:9999/ingredients
+Cookie: {{JID_R}}
+Content-Type: application/json
+
+{
+    "id": "SALD",
+    "name": "Fresh Salad",
+    "type": "VEGGIES"
+}
+
