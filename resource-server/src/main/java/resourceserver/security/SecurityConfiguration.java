@@ -12,7 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
+import org.springframework.web.filter.CommonsRequestLoggingFilter;
 import resourceserver.data.UserRepository;
 import resourceserver.domain.User;
 import resourceserver.security.Authorities.Ingredients;
@@ -38,7 +38,10 @@ public class SecurityConfiguration {
     return args -> {
       userRepository.save(
           new User(
-              "admin", passwordEncoder.encode("password"), "ADMIN", Ingredients.ALL.authorities()));
+              "res-admin",
+              passwordEncoder.encode("password"),
+              "ADMIN",
+              Ingredients.ALL.authorities()));
 
       userRepository.save(
           new User(
@@ -54,5 +57,18 @@ public class SecurityConfiguration {
   @Bean
   public HttpExchangeRepository httpExchangesProperties() {
     return new InMemoryHttpExchangeRepository();
+  }
+
+  @Bean
+  public CommonsRequestLoggingFilter logFilter() {
+    CommonsRequestLoggingFilter filter = new CommonsRequestLoggingFilter();
+    filter.setIncludeQueryString(true);
+    filter.setIncludePayload(true);
+    filter.setMaxPayloadLength(10000);
+    filter.setIncludeHeaders(false);
+    filter.setAfterMessagePrefix("REQUEST DATA: ");
+    filter.setIncludeClientInfo(true);
+    fi
+    return filter;
   }
 }
