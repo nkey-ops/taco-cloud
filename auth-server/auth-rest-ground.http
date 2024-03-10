@@ -1,3 +1,8 @@
+GET localhost:9000/.well-known/oauth-authorization-server
+GET localhost:9000/.well-known/openid-configuration
+#Cookie: {{JID2}}
+
+
 POST http://localhost:9000/login
 Content-Type: application/x-www-form-urlencoded
 
@@ -12,8 +17,7 @@ GET http://localhost:9000/oauth2/authorize?response_type=code&client_id=taco-adm
 Cookie: {{JID2}} 
 
 -G
-
--d scope=deleteIngredients+writeIngredients
+-d scope=deleteIngredients
 
 {%
   _G.gas_header("Location", "code=.*", context, "CODE")
@@ -23,8 +27,9 @@ POST http://localhost:9000/oauth2/authorize
 Content-type: application/x-www-form-urlencoded
 Cookie: {{JID2}}
 
+
 --data-urlencode client_id=taco-admin-client
---data-urlencode state=qrWy-skUg01dhVZOUsfQlkCxBYbonbarNcoAMuLkbhw=
+--data-urlencode state=8gkzjGp5bGIurGwjB9c1Lprl45jq2Aq2qnD2dXwfifw=
 --data-urlencode scope=deleteIngredients
 
 {%
@@ -34,7 +39,6 @@ Cookie: {{JID2}}
 #GET token
 POST http://localhost:9000/oauth2/token
 Content-type: application/x-www-form-urlencoded
-Cookie: {{JID2}} 
 
 -d grant_type=authorization_code
 -d redirect_uri=http://127.0.0.1:9000/login/oauth2/code/taco-admin-client
@@ -42,8 +46,8 @@ Cookie: {{JID2}}
 
 {{CODE}}
 
-  _G.gas_json("access_token", context, "TOKEN")
 {%
+  _G.gas_json("access_token", context, "TOKEN")
   _G.gas_json("refresh_token", context, "REF_TOKEN")
 %}
 
@@ -57,4 +61,8 @@ Cookie: {{JID2}}
 
 refresh_token={{REF_TOKEN}}
 
+{%
+  _G.gas_json("access_token", context, "TOKEN")
+  _G.gas_json("refresh_token", context, "REF_TOKEN")
+%}
 

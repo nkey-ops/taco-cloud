@@ -1,0 +1,24 @@
+GET localhost:9000/actuator/error
+GET localhost:9000/actuator/httptrace
+GET localhost:9000/actuator/loggers
+GET localhost:9000/actuator/mappings
+GET localhost:9000/actuator/threaddump
+GET localhost:9000/actuator/info
+GET localhost:9000/actuator/metrics
+GET localhost:9000/actuator/caches
+GET localhost:9000/actuator/caches
+GET localhost:9000/actuator
+GET localhost:9000/actuator/env
+GET localhost:9000/actuator/conditions
+GET localhost:9000/actuator/configprops
+GET localhost:9000/actuator/configprops/spring.security
+GET localhost:9000/actuator/metrics/disk.free
+
+
+GET localhost:8080/actuator
+GET localhost:8080/actuator/beans
+GET localhost:8080/actuator/configprops
+
+GET localhost:9999/actuator/metrics/http.server.requests,
+GET localhost:9999/actuator/mappings
+GET localhost:9999/actuator/httpexchanges

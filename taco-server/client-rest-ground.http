@@ -22,8 +22,8 @@ GET localhost:8080/
 Origin: http://localhost:8080
 Accept-Language: en-US,en;q=0.5
 
-GET localhost:8080/design
-Cookie: {{JID}}
+
+GET localhost:8080/register
 
 GET http://localhost:8080/api/tacos?recent
 Cookie: {{JID}}
@@ -40,17 +40,17 @@ Cookie: {{JID}}
 #http://localhost:8080/data-api
 
 POST http://localhost:8080/api/ingredients
-##Cookie: JSESSIONID={{JID}}
+Cookie: JSESSIONID={{JID}}
 Content-Type: application/json
 Authorization: Bearer {{TOKEN}}
 
 {
-  "id": "null",
+  "id": "tort",
   "name": "TORT",
   "type": "WRAP"
 }
 
-DELETE localhost:8080/api/ingredients/null
+DELETE localhost:8080/api/ingredients/tort
 Authorization: Bearer {{TOKEN}}
 
 
