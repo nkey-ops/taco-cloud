@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 import java.io.Serial;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,7 +35,6 @@ public class User implements UserDetails {
 
   private final String username;
   private final String password;
-  private final String role;
   private String fullname;
   private String street;
   private String city;
@@ -46,6 +46,7 @@ public class User implements UserDetails {
   public User(
       String username,
       String password,
+      String role,
       String fullname,
       String street,
       String city,
@@ -53,33 +54,42 @@ public class User implements UserDetails {
       String zip,
       String phoneNumber) {
 
+    Objects.requireNonNull(username);
+    Objects.requireNonNull(password);
+    Objects.requireNonNull(role);
+    Objects.requireNonNull(fullname);
+    Objects.requireNonNull(street);
+    Objects.requireNonNull(city);
+    Objects.requireNonNull(state);
+    Objects.requireNonNull(zip);
+    Objects.requireNonNull(phoneNumber);
+
     this.username = username;
     this.password = password;
-    this.role = "ROLE_USER";
     this.fullname = fullname;
     this.street = street;
     this.city = city;
     this.state = state;
     this.zip = zip;
     this.phoneNumber = phoneNumber;
-  }
 
-  public User(String username, String password, String role, GrantedAuthority... authorities) {
-    this.password = password;
-    this.username = username;
-    this.role = role;
-
-    this.authorities = new String[authorities.length];
-    for (int i = 0; i < authorities.length; i++) {
-      this.authorities[i] = authorities[i].getAuthority();
-    }
+    this.authorities = new String[] {role};
   }
 
   public User(String username, String password, String role, String... authorities) {
+    Objects.requireNonNull(username);
+    Objects.requireNonNull(password);
+    Objects.requireNonNull(authorities);
+    Objects.requireNonNull(role);
+
     this.password = password;
     this.username = username;
-    this.role = role;
-    this.authorities = authorities.clone();
+    this.authorities = new String[authorities.length + 1];
+
+    for (int i = 0; i < authorities.length; i++) {
+      this.authorities[i] = authorities[i];
+    }
+    this.authorities[authorities.length] = role;
   }
 
   @Override
