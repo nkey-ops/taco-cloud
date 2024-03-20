@@ -10,11 +10,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
-@SpringBootApplication(exclude = {
-    OAuth2AuthorizationServerJwtAutoConfiguration.class,
-    OAuth2AuthorizationServerAutoConfiguration.class,
-    OAuth2ResourceServerAutoConfiguration.class
-})
+@SpringBootApplication(
+    exclude = {
+      OAuth2AuthorizationServerJwtAutoConfiguration.class,
+      OAuth2AuthorizationServerAutoConfiguration.class,
+      OAuth2ResourceServerAutoConfiguration.class
+    })
 public class App {
   public static void main(String[] args) {
     SpringApplication.run(App.class, args);

@@ -1,15 +1,12 @@
 package authserver.authorization;
 
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jose.jwk.source.JWKSource;
-import com.nimbusds.jose.proc.SecurityContext;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.UUID;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -26,10 +23,16 @@ import org.springframework.security.oauth2.server.authorization.client.InMemoryR
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
+import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.proc.SecurityContext;
 
 @Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
@@ -38,11 +41,16 @@ public class AuthorizationServerConfig {
   @Bean
   @Order(1)
   SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
-
     OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
+
+    http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
+        .oidc(
+            oidc ->
+                oidc.clientRegistrationEndpoint(
+                    Customizer.withDefaults())); // Initialize `OidcConfigurer`
+
     return http.oauth2ResourceServer(
             (resourceServer) -> resourceServer.jwt(Customizer.withDefaults()))
-        .csrf(c -> c.disable())
         .build();
   }
 
@@ -67,7 +75,7 @@ public class AuthorizationServerConfig {
   }
 
   @Bean
-  AuthorizationServerSettings authoricationServerSettings() {
+  AuthorizationServerSettings authorizationServerSettings() {
     return AuthorizationServerSettings.builder().build();
   }
 
@@ -83,11 +91,34 @@ public class AuthorizationServerConfig {
             .redirectUri("http://127.0.0.1:9000/login/oauth2/code/taco-admin-client")
             .scope("writeIngredients")
             .scope("deleteIngredients")
+            .scope("readIngredients")
             .scope(OidcScopes.OPENID)
             .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
             .build();
 
-    return new InMemoryRegisteredClientRepository(registeredClient);
+    RegisteredClient resServerClient =
+        RegisteredClient.withId(UUID.randomUUID().toString())
+            .clientId("res-admin-client")
+            .clientSecret(passwordEncoder.encode("secret"))
+            .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+            .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+            .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+            .redirectUri("http://127.0.0.1:9999/login/oauth2/code/res-admin-client")
+            .scope("get:allIngredients")
+            .build();
+
+    RegisteredClient registrarClient =
+        RegisteredClient.withId(UUID.randomUUID().toString())
+            .clientId("r-c-registrar")
+            .clientSecret(passwordEncoder.encode("secret"))
+            .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+            .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
+            .scope("client.create")
+            .scope("client.read")
+            .build();
+
+    return new InMemoryRegisteredClientRepository(
+        registeredClient, resServerClient, registrarClient);
   }
 
   @Bean

@@ -1,6 +1,19 @@
 GET localhost:9000/.well-known/oauth-authorization-server
 GET localhost:9000/.well-known/openid-configuration
-#Cookie: {{JID2}}
+
+POST localhost:9000/connect/register
+# Cookie: {{JID2}}
+Authorization: Bearer {{TOKEN}}
+Content-Type: application/json
+
+{
+#    "client_name": "res-server",
+     "redirect_uris": ["localhost:9999"]
+}
+
+
+GET localhost:9000/oauth2/jwks
+Cookie: {{JID2}}
 
 
 POST http://localhost:9000/login
@@ -13,11 +26,24 @@ Content-Type: application/x-www-form-urlencoded
   _G.gas_header("Set-Cookie", "JSESSIONID=.-;", context, "JID2")
 %}
 
-GET http://localhost:9000/oauth2/authorize?response_type=code&client_id=taco-admin-client
+
+GET http://localhost:9000/oauth2/authorize?response_type=code
 Cookie: {{JID2}} 
 
 -G
+-d client_id=taco-admin-client
 -d scope=deleteIngredients
+
+{%
+  _G.gas_header("Location", "code=.*", context, "CODE")
+%}
+
+GET http://localhost:9000/oauth2/authorize?response_type=code
+Cookie: {{JID2}} 
+
+-G
+-d client_id=res-admin-client
+-d scope=get:allIngredients
 
 {%
   _G.gas_header("Location", "code=.*", context, "CODE")
@@ -29,7 +55,7 @@ Cookie: {{JID2}}
 
 
 --data-urlencode client_id=taco-admin-client
---data-urlencode state=8gkzjGp5bGIurGwjB9c1Lprl45jq2Aq2qnD2dXwfifw=
+--data-urlencode state=W85-G8TIpkEQtDcP596aW1SJ829KlTjM0NIVNQTGj-A=
 --data-urlencode scope=deleteIngredients
 
 {%
@@ -51,6 +77,21 @@ Content-type: application/x-www-form-urlencoded
   _G.gas_json("refresh_token", context, "REF_TOKEN")
 %}
 
+POST http://localhost:9000/oauth2/token
+Content-type: application/x-www-form-urlencoded
+
+-d grant_type=authorization_code
+-d redirect_uri=http://127.0.0.1:9999/login/oauth2/code/res-admin-client
+-u res-admin-client:secret
+
+{{CODE}}
+
+{%
+  _G.gas_json("access_token", context, "TOKEN")
+  _G.gas_json("refresh_token", context, "REF_TOKEN")
+%}
+
+
 ##refresh
 POST http://localhost:9000/oauth2/token
 Content-type: application/x-www-form-urlencoded
@@ -66,3 +107,16 @@ refresh_token={{REF_TOKEN}}
   _G.gas_json("refresh_token", context, "REF_TOKEN")
 %}
 
+
+
+POST localhost:9000/oauth2/token
+Content-type: application/x-www-form-urlencoded
+
+-d grant_type=client_credentials
+-d scope=client.create
+-u r-c-registrar:secret
+
+{%
+  _G.gas_json("access_token", context, "TOKEN")
+  _G.gas_json("refresh_token", context, "REF_TOKEN")
+%}
