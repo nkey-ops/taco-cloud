@@ -4,12 +4,35 @@ server:
 logging:
   level:
     org:
-      springframework: TRACE
+      apache:
+        logging: DEBUG
+      springframework:
+        web: DEBUG
+        # web:
+        #   filter:
+        #     CommonsRequestLoggingFilter: DEBUG
+    resourceserver: TRACE
+    httpclient:
+      wire: DEBUG
+
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9000
+          audiences: res-admin-client
 
 management:
   endpoints:
     web:
       exposure:
-        include: '*'
+        include: "*"
+
+auth-server:
+  client-registrar:
+    client-id: r-c-registrar
+    secret: secret
 
 

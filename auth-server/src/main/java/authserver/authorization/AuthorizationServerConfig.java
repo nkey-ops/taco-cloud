@@ -1,14 +1,10 @@
 package authserver.authorization;
 
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
+import jakarta.servlet.annotation.WebFilter;
 import java.util.UUID;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -18,21 +14,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
-import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jose.jwk.source.JWKSource;
-import com.nimbusds.jose.proc.SecurityContext;
+import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
 @Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
@@ -46,8 +36,9 @@ public class AuthorizationServerConfig {
     http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
         .oidc(
             oidc ->
-                oidc.clientRegistrationEndpoint(
-                    Customizer.withDefaults())); // Initialize `OidcConfigurer`
+                oidc.clientRegistrationEndpoint(Customizer.withDefaults())
+                    .providerConfigurationEndpoint(
+                        Customizer.withDefaults())); // Initialize `OidcConfigurer`
 
     return http.oauth2ResourceServer(
             (resourceServer) -> resourceServer.jwt(Customizer.withDefaults()))
@@ -75,11 +66,6 @@ public class AuthorizationServerConfig {
   }
 
   @Bean
-  AuthorizationServerSettings authorizationServerSettings() {
-    return AuthorizationServerSettings.builder().build();
-  }
-
-  @Bean
   RegisteredClientRepository registeredClientRepository(PasswordEncoder passwordEncoder) {
     RegisteredClient registeredClient =
         RegisteredClient.withId(UUID.randomUUID().toString())
@@ -92,8 +78,8 @@ public class AuthorizationServerConfig {
             .scope("writeIngredients")
             .scope("deleteIngredients")
             .scope("readIngredients")
+            .scope(OidcScopes.PROFILE)
             .scope(OidcScopes.OPENID)
-            .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
             .build();
 
     RegisteredClient resServerClient =
@@ -115,6 +101,7 @@ public class AuthorizationServerConfig {
             .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
             .scope("client.create")
             .scope("client.read")
+            .clientSecretExpiresAt(null)
             .build();
 
     return new InMemoryRegisteredClientRepository(
@@ -122,30 +109,20 @@ public class AuthorizationServerConfig {
   }
 
   @Bean
-  JWKSource<SecurityContext> jwkSource() throws NoSuchAlgorithmException {
-    RSAKey rsaKey = generateRsa();
-    JWKSet jwkSet = new JWKSet(rsaKey);
-    return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
-  }
+  public CommonsRequestLoggingFilter logFilter() {
 
-  private static RSAKey generateRsa() throws NoSuchAlgorithmException {
-    KeyPair keyPair = generateRsaKey();
-    RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
-    RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
-    return new RSAKey.Builder(publicKey)
-        .privateKey(privateKey)
-        .keyID(UUID.randomUUID().toString())
-        .build();
-  }
+    @Order(value = Ordered.HIGHEST_PRECEDENCE)
+    @WebFilter(filterName = "RequestCachingFilter", urlPatterns = "/*")
+    class RFilter extends CommonsRequestLoggingFilter {}
 
-  private static KeyPair generateRsaKey() throws NoSuchAlgorithmException {
-    KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-    keyPairGenerator.initialize(2048);
-    return keyPairGenerator.generateKeyPair();
-  }
-
-  @Bean
-  JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
-    return OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource);
+    var filter = new RFilter();
+    filter.setIncludeQueryString(true);
+    filter.setIncludePayload(true);
+    filter.setMaxPayloadLength(10000);
+    filter.setIncludeHeaders(true);
+    filter.setBeforeMessagePrefix("BEFORE:" + System.lineSeparator());
+    filter.setAfterMessagePrefix("AFTER: " + System.lineSeparator());
+    filter.setIncludeClientInfo(true);
+    return filter;
   }
 }

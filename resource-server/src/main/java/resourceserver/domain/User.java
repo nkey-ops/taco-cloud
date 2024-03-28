@@ -1,21 +1,25 @@
 package resourceserver.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import java.io.Serial;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Optional;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity(name = "users")
 @Getter
@@ -33,8 +37,16 @@ public class User implements UserDetails {
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
 
+  @Column(nullable = false)
   private final String username;
+
+  @Column(nullable = false)
   private final String password;
+
+  private String clientId;
+  @Column(length = 2048)
+  private String registrationAccessToken;
+
   private String fullname;
   private String street;
   private String city;
@@ -92,6 +104,14 @@ public class User implements UserDetails {
     this.authorities[authorities.length] = role;
   }
 
+  public Optional<String> getClientId() {
+    return Optional.ofNullable(clientId);
+  }
+
+  public Optional<String> getRegistrationAccessToken() {
+    return Optional.ofNullable(registrationAccessToken);
+  }
+
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     return Arrays.stream(authorities).map(SimpleGrantedAuthority::new).toList();
@@ -115,5 +135,10 @@ public class User implements UserDetails {
   @Override
   public boolean isEnabled() {
     return true;
+  }
+
+  @Override
+  public String toString() {
+    return "User [id=" + id + ", username=" + username + ", password=" + password + "]";
   }
 }
