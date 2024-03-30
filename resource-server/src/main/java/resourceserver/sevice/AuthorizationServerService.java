@@ -1,10 +1,9 @@
 package resourceserver.sevice;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.Base64;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,13 +15,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.oidc.OidcClientRegistration;
+import org.springframework.security.oauth2.server.authorization.oidc.converter.OidcClientRegistrationRegisteredClientConverter;
 import org.springframework.security.oauth2.server.authorization.oidc.http.converter.OidcClientRegistrationHttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestTemplate;
-
-import jakarta.validation.constraints.NotNull;
 import resourceserver.data.UserRepository;
 import resourceserver.domain.User;
 
@@ -36,8 +34,11 @@ public class AuthorizationServerService {
 
   private final RestTemplate restTemplate;
   private final RestClient restClient;
-
   private final UserRepository userRepository;
+
+  private final OidcClientRegistrationRegisteredClientConverter
+      oidcClientRegistrationRegisteredClientConverter =
+          new OidcClientRegistrationRegisteredClientConverter();
 
   public AuthorizationServerService(
       @Value("${auth-server.client-registrar.client-id}") String clientId,
@@ -91,7 +92,7 @@ public class AuthorizationServerService {
     }
 
     log.debug(
-        "Received Response: {}{}{}",
+        "Response: {}{}{}",
         responseEntity.getBody(),
         System.lineSeparator(),
         responseEntity.getHeaders());
@@ -117,7 +118,7 @@ public class AuthorizationServerService {
     return token;
   }
 
-  public void createRegistereClient(User user) {
+  public RegisteredClient createRegistereClient(User user) {
     Objects.requireNonNull(user);
 
     var headers = new HttpHeaders();
@@ -144,22 +145,59 @@ public class AuthorizationServerService {
               responseEntity.getStatusCode(), responseEntity.getBody()));
     }
 
-    var sbBody = new StringBuilder();
+    log.debug(
+        "Response: {}{}{}",
+        responseEntity.getStatusCode() + System.lineSeparator(),
+        responseEntity.getHeaders() + System.lineSeparator(),
+        responseEntity.getBody().getClaims());
 
-    responseEntity
-        .getBody()
-        .getClaims()
-        .forEach((k, v) -> sbBody.append(k + " " + v + System.lineSeparator()));
-    sbBody.append(System.lineSeparator());
-    responseEntity
-        .getHeaders()
-        .forEach((k, v) -> sbBody.append(k + " " + v + System.lineSeparator()));
+    var registeredClient = responseEntity.getBody();
+    user.setClientId(registeredClient.getClientId());
+    user.setRegistrationAccessToken(registeredClient.getRegistrationAccessToken());
 
-    log.debug("Received Response: {}", sbBody.toString());
+    user = userRepository.save(user);
 
-    var regClient = responseEntity.getBody();
-    user.setClientId(regClient.getClientId());
-    user.setRegistrationAccessToken(regClient.getRegistrationAccessToken());
-    userRepository.save(user);
+    return oidcClientRegistrationRegisteredClientConverter.convert(registeredClient);
+  }
+
+  @NotNull
+  public RegisteredClient getClientInfo(User user) {
+    Objects.requireNonNull(user);
+    var clientId =
+        user.getClientId()
+            .orElseThrow(
+                () -> new IllegalArgumentException("User doesn't have client credentials"));
+
+    var registrationAccessToken =
+        user.getRegistrationAccessToken()
+            .orElseThrow(
+                () -> new IllegalArgumentException("User doesn't have client credentials"));
+
+    var headers = new HttpHeaders();
+    headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + registrationAccessToken);
+    headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+
+    var responseEntity =
+        restClient
+            .get()
+            .uri("/connect/register?client_id=" + clientId)
+            .headers(h -> h.addAll(headers))
+            .retrieve()
+            .toEntity(OidcClientRegistration.class);
+
+    if (responseEntity.getStatusCode() != HttpStatus.OK) {
+      throw new IllegalStateException(
+          String.format(
+              "The authorization server's client info wasn't returned due to [%s]: %s",
+              responseEntity.getStatusCode(), responseEntity.getBody()));
+    }
+
+    log.debug(
+        "Response: {}{}{}",
+        responseEntity.getStatusCode() + System.lineSeparator(),
+        responseEntity.getHeaders() + System.lineSeparator(),
+        responseEntity.getBody().getClaims());
+
+    return oidcClientRegistrationRegisteredClientConverter.convert(responseEntity.getBody());
   }
 }

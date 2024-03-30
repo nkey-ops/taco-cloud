@@ -1,8 +1,6 @@
 package resourceserver.security;
 
-import java.time.Duration;
-
-import org.springframework.beans.factory.annotation.Value;
+import jakarta.servlet.annotation.WebFilter;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.actuate.web.exchanges.HttpExchangeRepository;
 import org.springframework.boot.actuate.web.exchanges.InMemoryHttpExchangeRepository;
@@ -16,20 +14,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
-import org.springframework.security.oauth2.core.OAuth2TokenValidator;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtDecoders;
-import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
-import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
-
-import jakarta.servlet.annotation.WebFilter;
 import resourceserver.data.UserRepository;
 import resourceserver.domain.User;
 import resourceserver.security.Authorities.Ingredients;
@@ -82,9 +70,9 @@ public class SecurityConfiguration {
 
     @Order(value = Ordered.HIGHEST_PRECEDENCE)
     @WebFilter(filterName = "RequestCachingFilter", urlPatterns = "/*")
-    class RFilter extends CommonsRequestLoggingFilter {}
+    class CustomFilter extends CommonsRequestLoggingFilter {}
 
-    var filter = new RFilter();
+    var filter = new CustomFilter();
     filter.setIncludeQueryString(true);
     filter.setIncludePayload(true);
     filter.setMaxPayloadLength(10000);
@@ -105,5 +93,4 @@ public class SecurityConfiguration {
     jwtAuthenConverter.setJwtGrantedAuthoritiesConverter(jwtGrandConverter);
     return jwtAuthenConverter;
   }
-
 }

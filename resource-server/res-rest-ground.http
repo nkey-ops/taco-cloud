@@ -18,8 +18,7 @@ POST localhost:9999/login
 
 GET localhost:9999/ingredients
 Cookie: {{JID_R}}
-
--u res-admin:password
+# Authorization: Bearer {{TOKEN}}
 
 PUT localhost:9999/ingredients
 Cookie: {{JID_R}}
@@ -30,3 +29,11 @@ Content-Type: application/json
     "name": "Fresh Salad",
     "type": "VEGGIES"
 }
+
+
+GET localhost:9999/auth/clientinfo
+Cookie: {{JID_R}}
+
+GET localhost:9000/connect/register?client_id=kWRFr-GKw4186WLg3QKDfpReDci8uaRU6ftA5q5RuOA
+Authorization: Bearer eyJraWQiOiJkZGI5ZTUzZi00NzExLTQzODYtOTA2NS1mZjJjMDVmNGI5MmEiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJrV1JGci1HS3c0MTg2V0xnM1FLRGZwUmVEY2k4dWFSVTZmdEE1cTVSdU9BIiwiYXVkIjoia1dSRnItR0t3NDE4NldMZzNRS0RmcFJlRGNpOHVhUlU2ZnRBNXE1UnVPQSIsIm5iZiI6MTcxMTEzMDUxMywic2NvcGUiOlsiY2xpZW50LnJlYWQiXSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo5MDAwIiwiZXhwIjoxNzExMTMwODEzLCJpYXQiOjE3MTExMzA1MTMsImp0aSI6ImRhNjc2MzQxLTVjOWQtNDUwNi04ZTE2LTE0NDVkMzg1MTdlZSJ9.cxSJpu2KkuuFikZ7f3XYc7g-SwNF2FPbHs5CRc04nt1f5EM_XXh7cHP2E2jjWPeHiPG4lf2Uzg8oCrYCoN78Vah7iNCmLZjYkU4MOzzXn4wS2S3Hn27DR-5oxay9d3f09usi-DsLjvsPPOlizFFFTkX-m2WOACWNgnhfTwH2TdwlQj6qjRbCwBVWCHcfQCHhdv1AYjoQjORjDbgmo6pEKw7SDrBvwvZzsWcEYe-SpyS3CiCPvzfEFovF2UI9GXIHYdLjsXdwfCLCiZgLT-w_KmUrxumM-ukvd1nfIRJqyvhSs85gAZCP7HC0BUpcVjzRIDtBXd5ljy3f_N1LF5LTXw
+
