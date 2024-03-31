@@ -2,17 +2,18 @@ package resourceserver.sevice;
 
 import jakarta.validation.constraints.NotNull;
 import java.util.Base64;
-import java.util.Map;
+import java.util.List;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
+import org.springframework.security.oauth2.core.http.converter.OAuth2AccessTokenResponseHttpMessageConverter;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.oidc.OidcClientRegistration;
 import org.springframework.security.oauth2.server.authorization.oidc.converter.OidcClientRegistrationRegisteredClientConverter;
@@ -29,10 +30,9 @@ public class AuthorizationServerService {
   Logger log = LoggerFactory.getLogger(AuthorizationServerService.class);
 
   private final String encodedCredentials;
-  private final String resourceServerURL;
-  private final String baseURL = "localhost:9999";
+  private final String resourceServerUrl;
+  private final String baseUrl = "localhost:9999";
 
-  private final RestTemplate restTemplate;
   private final RestClient restClient;
   private final UserRepository userRepository;
 
@@ -40,35 +40,39 @@ public class AuthorizationServerService {
       oidcClientRegistrationRegisteredClientConverter =
           new OidcClientRegistrationRegisteredClientConverter();
 
+  private final String tokenEndpoint;
+  private final String clientRegistrationEndpoint;
+
   public AuthorizationServerService(
       @Value("${auth-server.client-registrar.client-id}") String clientId,
       @Value("${auth-server.client-registrar.secret}") String clientSecret,
-      @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}") String resourceServerURL,
-      RestTemplateBuilder restTemplateBuilder,
+      @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}") String resourceServerUrl,
       RestClient.Builder restBuilder,
       UserRepository userRepository) {
 
     this.encodedCredentials =
         Base64.getEncoder()
             .encodeToString(String.format("%s:%s", clientId, clientSecret).getBytes());
-    this.resourceServerURL = resourceServerURL;
-    this.restTemplate = restTemplateBuilder.build();
+    this.resourceServerUrl = resourceServerUrl;
     this.userRepository = userRepository;
 
-    this.restTemplate
-        .getMessageConverters()
-        .add(0, new OidcClientRegistrationHttpMessageConverter());
+    this.tokenEndpoint = resourceServerUrl + "/oauth2/token";
+    this.clientRegistrationEndpoint = resourceServerUrl + "/connect/register";
+
+    var converters =
+        List.of(
+            new OidcClientRegistrationHttpMessageConverter(),
+            new OAuth2AccessTokenResponseHttpMessageConverter());
 
     this.restClient =
         RestClient.builder()
-            .baseUrl(resourceServerURL)
-            .messageConverters(
-                converter -> converter.add(0, new OidcClientRegistrationHttpMessageConverter()))
+            .baseUrl(resourceServerUrl)
+            .messageConverters(converter -> converter.addAll(0, converters))
             .build();
   }
 
   @NotNull
-  private String getClientRegistrationToken() {
+  private OAuth2AccessToken getClientRegistrationAccessToken() {
     var headers = new HttpHeaders();
     headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
     headers.set(HttpHeaders.AUTHORIZATION, "Basic " + encodedCredentials);
@@ -77,18 +81,20 @@ public class AuthorizationServerService {
     body.add("grant_type", "client_credentials");
     body.add("scope", "client.create");
 
-    var requestEntity =
-        RequestEntity.post(resourceServerURL + "/oauth2/token").headers(headers).body(body);
-
     var responseEntity =
-        restTemplate.exchange(
-            requestEntity, new ParameterizedTypeReference<Map<String, String>>() {});
+        restClient
+            .post()
+            .uri(tokenEndpoint)
+            .headers(h -> h.addAll(headers))
+            .body(body)
+            .retrieve()
+            .toEntity(OAuth2AccessTokenResponse.class);
 
     if (responseEntity.getStatusCode() != HttpStatus.OK) {
       throw new IllegalStateException(
           String.format(
               "The token wasn't receieved form auth-server: %s due to [%s]: %s",
-              resourceServerURL, responseEntity.getStatusCode(), responseEntity.getBody()));
+              resourceServerUrl, responseEntity.getStatusCode(), responseEntity.getBody()));
     }
 
     log.debug(
@@ -100,43 +106,32 @@ public class AuthorizationServerService {
     var response = responseEntity.getBody();
     Objects.requireNonNull(response, "Response body cannot be empty");
 
-    if (!response.containsKey("access_token")
-        || !response.containsKey("scope")
-        || !response.containsKey("token_type")
-        || !response.containsKey("expires_in")) {
-
-      throw new IllegalStateException(
-          String.format(
-              "Responce body doesn't contain one of paraemters: access_token, scope, token_type or"
-                  + " expires_in. Body: %s%s",
-              response, System.lineSeparator()));
-    }
-
-    var token = response.get("access_token");
-    Objects.requireNonNull(token, "Token cannot be null");
-
-    return token;
+    return response.getAccessToken();
   }
 
   public RegisteredClient createRegistereClient(User user) {
     Objects.requireNonNull(user);
+    OAuth2AccessToken clientRegistrationAccessToken = getClientRegistrationAccessToken();
 
     var headers = new HttpHeaders();
-    headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + getClientRegistrationToken());
+    headers.add(
+        HttpHeaders.AUTHORIZATION, "Bearer " + clientRegistrationAccessToken.getTokenValue());
     headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
 
     var clientRegistration =
         OidcClientRegistration.builder()
             .clientName(user.getUsername())
-            .redirectUri(baseURL + "/login/oauth2/code/" + user.getUsername())
+            .redirectUri(baseUrl + "/login/oauth2/code/" + user.getUsername())
             .build();
 
-    var requestEntity =
-        RequestEntity.post(resourceServerURL + "/connect/register")
-            .headers(headers)
-            .body(clientRegistration);
-
-    var responseEntity = restTemplate.exchange(requestEntity, OidcClientRegistration.class);
+    var responseEntity =
+        restClient
+            .post()
+            .uri(clientRegistrationEndpoint)
+            .headers(h -> h.addAll(headers))
+            .body(clientRegistration)
+            .retrieve()
+            .toEntity(OidcClientRegistration.class);
 
     if (responseEntity.getStatusCode() != HttpStatus.CREATED) {
       throw new IllegalStateException(
@@ -153,6 +148,7 @@ public class AuthorizationServerService {
 
     var registeredClient = responseEntity.getBody();
     user.setClientId(registeredClient.getClientId());
+    // TODO Time-limited
     user.setRegistrationAccessToken(registeredClient.getRegistrationAccessToken());
 
     user = userRepository.save(user);
@@ -180,7 +176,7 @@ public class AuthorizationServerService {
     var responseEntity =
         restClient
             .get()
-            .uri("/connect/register?client_id=" + clientId)
+            .uri(clientRegistrationEndpoint + "?client_id=" + clientId)
             .headers(h -> h.addAll(headers))
             .retrieve()
             .toEntity(OidcClientRegistration.class);

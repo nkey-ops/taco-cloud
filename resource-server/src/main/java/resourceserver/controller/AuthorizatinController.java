@@ -23,6 +23,6 @@ public class AuthorizatinController {
   public ResponseEntity<RegisteredClient> getAuthorizationServerUserInfo(
       @AuthenticationPrincipal User user) {
 
-    return ResponseEntity.ok(authorizationServerService.getClientRest(user));
+    return ResponseEntity.ok(authorizationServerService.getClientInfo(user));
   }
 }
