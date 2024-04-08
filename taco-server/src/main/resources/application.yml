@@ -12,20 +12,38 @@ spring:
       enabled: "true"
   security:
     oauth2:
-       client:
-         registration:
-           taco-admin-client:
-             provider: tacocloud
-             client-id: taco-admin-client
-             client-secret: secret
-             authorization-grant-type: authorization_code
-             scope: writeIngredients,deleteIngredients,readIngredients
-             redirect-uri: http://localhost:9000/login/oauth2/code/{registrationId}
-         provider:
-           tacocloud:
-             issuer-uri: http://localhost:9000
+      client:
+        registration:
+          taco-admin-client:
+            provider: tacocloud
+            client-id: taco-admin-client
+            client-secret: secret
+            authorization-grant-type: authorization_code
+            scope: writeIngredients,deleteIngredients,readIngredients
+            redirect-uri: http://localhost:9000/login/oauth2/code/{registrationId}
+        provider:
+          tacocloud:
+            issuer-uri: http://localhost:9000
 
 logging:
   level:
     org:
-      springframework: TRACE
+      springframework.web: DEBUG
+    tacos: TRACE
+
+tacos:
+  service:
+    ingredients-service:
+      uri: http://localhost:9999/ingredients
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+
+taco-server:
+  client-registrar:
+    client-id: r-c-registrar
+    secret: secret
