@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 @SpringBootApplication
 public class AuthorizationServerApplication {
@@ -21,5 +22,14 @@ public class AuthorizationServerApplication {
       uManager.createUser(new User("tacochef", encoder.encode("password"), "ROLE_ADMIN"));
     };
   }
+
+
+  @Bean
+  InternalResourceViewResolver internalResourceViewResolver(){
+    var internalResourceViewResolver = new InternalResourceViewResolver();
+    internalResourceViewResolver.setSuffix(".html");
+    return internalResourceViewResolver;
+  }
+
 }
 

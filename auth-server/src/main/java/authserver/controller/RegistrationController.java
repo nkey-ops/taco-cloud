@@ -1,13 +1,18 @@
 package authserver.controller;
 
-import authserver.User;
-import jakarta.websocket.server.PathParam;
 import java.util.Objects;
+
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+import authserver.User;
+import jakarta.websocket.server.PathParam;
 
 @Controller
 public class RegistrationController {
@@ -22,7 +27,7 @@ public class RegistrationController {
 
   @GetMapping("/register")
   public String registrationForm() {
-    return "registration.html";
+    return "registration";
   }
 
   @PostMapping("/register")
@@ -52,6 +57,14 @@ public class RegistrationController {
 
   @GetMapping("/login")
   public String login() {
-    return "login.html";
+    return "login";
+  }
+  
+  @GetMapping("/")
+  public ModelAndView home(@AuthenticationPrincipal UserDetails user) {
+    ModelAndView modelAndView = new ModelAndView("home");
+    modelAndView.addObject("username", user.getUsername());
+
+    return modelAndView;
   }
 }

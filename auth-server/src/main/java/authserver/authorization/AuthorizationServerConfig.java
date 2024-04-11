@@ -65,11 +65,7 @@ public class AuthorizationServerConfig {
                         "/actuator/**",
                         "/register",
                         "/error",
-                        "/resources/**",
-                        "/**",
-                        "/resources/static/**",
-                        "/resources/templates/**",
-                        "/resources/templates")
+                        "/resources/public/**")
                     .permitAll()
                     .anyRequest()
                     .authenticated())
