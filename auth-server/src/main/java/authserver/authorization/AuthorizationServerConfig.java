@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -19,9 +20,12 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
-import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
 @Configuration(proxyBeanMethods = false)
@@ -31,14 +35,21 @@ public class AuthorizationServerConfig {
   @Bean
   @Order(1)
   SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
+    // facilitating a login process upon hitting the endpoint without being logged in
+    http.authorizeHttpRequests(r -> r.requestMatchers("/oauth2/authorize/**").authenticated());
+
     OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
 
-    http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
+    http.exceptionHandling(
+            (exceptions) ->
+                exceptions.defaultAuthenticationEntryPointFor(
+                    new LoginUrlAuthenticationEntryPoint("/login"),
+                    new MediaTypeRequestMatcher(MediaType.TEXT_HTML)))
+        .getConfigurer(OAuth2AuthorizationServerConfigurer.class)
         .oidc(
             oidc ->
                 oidc.clientRegistrationEndpoint(Customizer.withDefaults())
-                    .providerConfigurationEndpoint(
-                        Customizer.withDefaults())); // Initialize `OidcConfigurer`
+                    .providerConfigurationEndpoint(Customizer.withDefaults()));
 
     return http.oauth2ResourceServer(
             (resourceServer) -> resourceServer.jwt(Customizer.withDefaults()))
@@ -49,8 +60,20 @@ public class AuthorizationServerConfig {
   @Order(2)
   SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
     return http.authorizeHttpRequests(
-            r -> r.requestMatchers("/actuator/**").permitAll().anyRequest().authenticated())
-        .formLogin(Customizer.withDefaults())
+            r ->
+                r.requestMatchers(
+                        "/actuator/**",
+                        "/register",
+                        "/error",
+                        "/resources/**",
+                        "/**",
+                        "/resources/static/**",
+                        "/resources/templates/**",
+                        "/resources/templates")
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated())
+        .formLogin(login -> login.loginPage("/login").permitAll())
         .csrf(c -> c.disable())
         .build();
   }
@@ -82,15 +105,15 @@ public class AuthorizationServerConfig {
             .scope(OidcScopes.OPENID)
             .build();
 
-    RegisteredClient resServerClient =
+    RegisteredClient resourceServerClient =
         RegisteredClient.withId(UUID.randomUUID().toString())
-            .clientId("res-admin-client")
+            .clientId("resource_client")
             .clientSecret(passwordEncoder.encode("secret"))
             .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
             .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
             .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-            .redirectUri("http://127.0.0.1:9999/login/oauth2/code/res-admin-client")
-            .scope("get:allIngredients")
+            .redirectUri("http://127.0.0.1:9999/login/oauth2/code/resource_client")
+            .scope("openid")
             .build();
 
     RegisteredClient registrarClient =
@@ -101,11 +124,10 @@ public class AuthorizationServerConfig {
             .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
             .scope("client.create")
             .scope("client.read")
-            .clientSecretExpiresAt(null)
             .build();
 
     return new InMemoryRegisteredClientRepository(
-        registeredClient, resServerClient, registrarClient);
+        registeredClient, resourceServerClient, registrarClient);
   }
 
   @Bean
@@ -124,5 +146,16 @@ public class AuthorizationServerConfig {
     filter.setAfterMessagePrefix("AFTER: " + System.lineSeparator());
     filter.setIncludeClientInfo(true);
     return filter;
+  }
+
+  @Bean
+  public JwtAuthenticationConverter jAuthenticationConverter() {
+    JwtGrantedAuthoritiesConverter jwtGrandConverter = new JwtGrantedAuthoritiesConverter();
+
+    jwtGrandConverter.setAuthorityPrefix("");
+
+    var jwtAuthenConverter = new JwtAuthenticationConverter();
+    jwtAuthenConverter.setJwtGrantedAuthoritiesConverter(jwtGrandConverter);
+    return jwtAuthenConverter;
   }
 }
