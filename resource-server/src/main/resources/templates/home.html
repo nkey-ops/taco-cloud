@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Resource Server</title>
+</head>
+
+<body>
+    <div>Welcome [[${username}]]</div>
+
+    <div th:if="${isAccountLinked == false}">
+        <form  method="POST" th:action="@{/oauth2/authorization/auth-server}">
+            <input type="submit" value="Link Authorization Server" />
+        </form>
+    </div>
+</body>
+</html>

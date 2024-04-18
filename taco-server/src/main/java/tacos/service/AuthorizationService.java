@@ -102,7 +102,7 @@ public class AuthorizationService {
     log.debug(
         "Response: {}{}{}{}{}{}{}",
         String.format(
-            "%s %s %s",
+            "%s %s",
             accessTokenResponse.getAccessToken().getTokenValue(),
             System.lineSeparator(),
             accessTokenResponse.getAccessToken().getScopes()),

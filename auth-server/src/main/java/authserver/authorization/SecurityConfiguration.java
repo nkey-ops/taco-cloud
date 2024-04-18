@@ -30,7 +30,7 @@ import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
 @Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
-public class AuthorizationServerConfig {
+public class SecurityConfiguration {
 
   @Bean
   @Order(1)
@@ -46,6 +46,7 @@ public class AuthorizationServerConfig {
                     new LoginUrlAuthenticationEntryPoint("/login"),
                     new MediaTypeRequestMatcher(MediaType.TEXT_HTML)))
         .getConfigurer(OAuth2AuthorizationServerConfigurer.class)
+        // .tokenIntrospectionEndpoint(Customizer.withDefaults())
         .oidc(
             oidc ->
                 oidc.clientRegistrationEndpoint(Customizer.withDefaults())
@@ -61,11 +62,7 @@ public class AuthorizationServerConfig {
   SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
     return http.authorizeHttpRequests(
             r ->
-                r.requestMatchers(
-                        "/actuator/**",
-                        "/register",
-                        "/error",
-                        "/resources/public/**")
+                r.requestMatchers("/actuator/**", "/register", "/error", "/resources/public/**")
                     .permitAll()
                     .anyRequest()
                     .authenticated())
@@ -106,7 +103,7 @@ public class AuthorizationServerConfig {
             .clientId("resource_client")
             .clientSecret(passwordEncoder.encode("secret"))
             .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-            .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+            .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
             .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
             .redirectUri("http://127.0.0.1:9999/login/oauth2/code/resource_client")
             .scope("openid")
@@ -122,8 +119,18 @@ public class AuthorizationServerConfig {
             .scope("client.read")
             .build();
 
+    var resourceUserAccessClient =
+        RegisteredClient.withId(UUID.randomUUID().toString())
+            .clientId("rs-client")
+            .clientSecret(passwordEncoder.encode("secret"))
+            .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+            .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+            .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+            .redirectUri("http://127.0.0.1:9999/oauth2/authorized/auth-server")
+            .build();
+
     return new InMemoryRegisteredClientRepository(
-        registeredClient, resourceServerClient, registrarClient);
+        registeredClient, resourceServerClient, registrarClient, resourceUserAccessClient);
   }
 
   @Bean

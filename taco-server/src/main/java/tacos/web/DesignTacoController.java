@@ -34,7 +34,7 @@ public class DesignTacoController {
 
   @ModelAttribute
   public void addIngredientsToModel(Model model) {
-    List<Ingredient> ingredients = ingridientsService.get();
+    List<Ingredient> ingredients = ingridientsService.get(null);
 
     for (Type type : Ingredient.Type.values()) {
       model.addAttribute(type.toString().toLowerCase(), filterByType(ingredients, type));

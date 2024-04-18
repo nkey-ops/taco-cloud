@@ -4,25 +4,30 @@ server:
 logging:
   level:
     org:
-      apache:
-        logging: DEBUG
       springframework:
-        web: DEBUG
-        # web:
-        #   filter:
-        #     CommonsRequestLoggingFilter: DEBUG
+        web: TRACE
+        security: TRACE
     resourceserver: TRACE
-    httpclient:
-      wire: DEBUG
-
 
 spring:
   security:
     oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:9000
-          audiences: res-admin-client
+      client:
+        registration:
+          auth-server:
+            client-id: rs-client
+            client-secret: secret
+            redirect-uri: http://127.0.0.1:9999/oauth2/authorized/auth-server
+            scope: profile
+            authorization-grant-type: authorization_code
+        provider:
+          auth-server:
+            issuer-uri: http://localhost:9000
+
+            #      resourceserver:
+            #        jwt:
+            #          issuer-uri: http://localhost:9000
+            #          audiences: res-admin-client
 
 management:
   endpoints:
@@ -34,5 +39,3 @@ auth-server:
   client-registrar:
     client-id: r-c-registrar
     secret: secret
-
-

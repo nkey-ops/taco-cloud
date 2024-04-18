@@ -1,0 +1,10 @@
+GET /oauth2/authorize?&response_type=code&scope=openid%20profile&client_id=resource_client&redirect_uri=http://localhost:9999/login/oauth2/code/resource_client, client=127.0.0.1, session=E36665060B327832CD615CBE89EF83DB, 
+
+headers=[host:"localhost:9000", user-agent:"curl/7.81.0", accept:"*/*", accept-encoding:"deflate, gzip, br, zstd", cookie:"JSESSIONID=E36665060B327832CD615CBE89EF83DB;"]]
+
+GET /oauth2/authorize?response_type=code&client_id=resource_client&scope=openid&state=JqEGdeJLKWNhW23ROL-3yRUoQSKBp4vZ_JUnSmfriBE%3D&redirect_uri=http://localhost:9999/login/oauth2/code/resource_client&nonce=QOBs5EEPBQr7ICuv_Q_yZrV
+3ZIr9dYfSBWECbt3dZyQ, client=127.0.0.1, 
+
+headers=[host:"localhost:9000", user-agent:"Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:123.0) Gecko/20100101 Firefox/123.0", accept:"text/html,application/xhtml+xml,application/xml;q=0.9,imag
+e/avif,image/webp,*/*;q=0.8", accept-language:"en-US,en;q=0.5", accept-encoding:"gzip, deflate, br", referer:"http://localhost:9999/", connection:"keep-alive", cookie:"JSESSIONID=40D4F029070569B9C8E86D4D4EE28272", upgrade-insecure-
+requests:"1", sec-fetch-dest:"document", sec-fetch-mode:"navigate", sec-fetch-site:"cross-site", sec-fetch-user:"?1"]]

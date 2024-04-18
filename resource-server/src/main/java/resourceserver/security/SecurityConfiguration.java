@@ -14,27 +14,36 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
 import resourceserver.data.UserRepository;
 import resourceserver.domain.User;
 import resourceserver.security.Authorities.Ingredients;
-import resourceserver.sevice.AuthorizationServerService;
+import resourceserver.service.UserAthorizationService;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfiguration {
 
+   @Bean
+   @Order(1)
+   SecurityFilterChain oAuth2SecurityFilterChain(HttpSecurity http) throws Exception {
+     return http.oauth2Client(Customizer.withDefaults()).build();
+   }
+
   @Bean
+  @Order(2)
   SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
     return http.authorizeHttpRequests(
-            a -> a.requestMatchers("/actuator/**").permitAll().anyRequest().authenticated())
-        .formLogin(Customizer.withDefaults())
+            a ->
+                a.requestMatchers("/actuator/**", "/error")
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated())
         .csrf(c -> c.disable())
-        .oauth2ResourceServer(r -> r.jwt(Customizer.withDefaults()))
+        .formLogin(Customizer.withDefaults())
+        // .oauth2ResourceServer(r -> r.jwt(Customizer.withDefaults()))
         .build();
   }
 
@@ -42,7 +51,7 @@ public class SecurityConfiguration {
   public ApplicationRunner onApplicationStartup(
       UserRepository userRepository,
       PasswordEncoder passwordEncoder,
-      AuthorizationServerService authService) {
+      UserAthorizationService authorizationService) {
 
     return args -> {
       User admin =
@@ -50,8 +59,6 @@ public class SecurityConfiguration {
       User user = new User("user", passwordEncoder.encode("password"), "USER");
       userRepository.save(admin);
       userRepository.save(user);
-
-      authService.createRegistereClient(user);
     };
   }
 
@@ -81,16 +88,5 @@ public class SecurityConfiguration {
     filter.setAfterMessagePrefix("AFTER: " + System.lineSeparator());
     filter.setIncludeClientInfo(true);
     return filter;
-  }
-
-  @Bean
-  public JwtAuthenticationConverter jAuthenticationConverter() {
-    JwtGrantedAuthoritiesConverter jwtGrandConverter = new JwtGrantedAuthoritiesConverter();
-
-    jwtGrandConverter.setAuthorityPrefix("");
-
-    var jwtAuthenConverter = new JwtAuthenticationConverter();
-    jwtAuthenConverter.setJwtGrantedAuthoritiesConverter(jwtGrandConverter);
-    return jwtAuthenConverter;
   }
 }

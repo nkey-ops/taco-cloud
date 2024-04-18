@@ -24,4 +24,7 @@ public class Taco {
     this.name = name;
     this.ingredients = ingredients;
   }
+
+  public Taco() {
+  }
 }

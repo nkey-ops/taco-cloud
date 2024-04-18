@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import tacos.domain.User;
 import tacos.repo.UserRepository;
+import tacos.service.AuthorizationService;
 
 @Configuration
 @EnableMethodSecurity(prePostEnabled = true)
@@ -28,7 +29,8 @@ public class SecurityConfig {
     return http.csrf(c -> c.disable())
         .authorizeHttpRequests(
             a ->
-                a.requestMatchers("/login", "/error", "/register", "/", "/images/**")
+                a.requestMatchers(
+                        "/login", "/error", "/register", "/", "/images/**", "/actuator/**")
                     .permitAll()
                     // .requestMatchers(HttpMethod.GET, "/api/ingredients")
                     // .hasAuthority("SCOPE_readIngredients")
@@ -53,15 +55,24 @@ public class SecurityConfig {
   }
 
   @Bean
-  ApplicationRunner loadUsers(UserRepository manager, PasswordEncoder passwordEncoder) {
+  ApplicationRunner loadUsers(
+      UserRepository manager,
+      PasswordEncoder passwordEncoder,
+      AuthorizationService authorizationService) {
+
+    var user =
+        new User(
+            "habuma",
+            passwordEncoder.encode("password"),
+            "rest-admin",
+            "JSESSIONID=051B566F211C83F9CAE6ECA5AF35E511;",
+            "ROLE_ADMIN");
+
+    authorizationService.createRegisteredClient(user);
+
+
     return args -> {
-      manager.save(
-          new User(
-              "habuma",
-              passwordEncoder.encode("password"),
-              "rest-admin",
-              "JSESSIONID=051B566F211C83F9CAE6ECA5AF35E511;",
-              "ROLE_ADMIN"));
+      manager.save(user);
     };
   }
 }

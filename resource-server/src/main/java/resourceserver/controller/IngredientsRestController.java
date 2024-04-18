@@ -25,8 +25,24 @@ public class IngredientsRestController {
     this.ingredientRepository = ingredientRepository;
   }
 
+  @GetMapping("/some")
+  public String name() {
+    return """
+    {
+      "user": {
+          "profile": {
+            "details": {
+              "name": "something"
+            }
+          }
+      }
+    }
+      """;
+  }
+
   @GetMapping
-  @PreAuthorize("hasAuthority('" + Ingredients.Get.ALL + "')")
+  // @PreAuthorize("hasAuthority('" + Ingredients.Get.ALL + "')")
+  // @Secured(Ingredients.Get.ALL)
   public List<Ingredient> getAllIngridients() {
     return ingredientRepository.findAll();
   }
@@ -39,7 +55,7 @@ public class IngredientsRestController {
 
   @DeleteMapping("/{id}")
   @PreAuthorize("hasAuthority('" + Ingredients.Delete.INGREDIENT + "')")
-  public void delteIngredient(@PathVariable("id") String id) {
+  public void deleteIngredient(@PathVariable("id") String id) {
     ingredientRepository.deleteById(id);
     ;
   }

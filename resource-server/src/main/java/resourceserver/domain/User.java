@@ -1,23 +1,25 @@
 package resourceserver.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import java.io.Serial;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity(name = "users")
 @Getter
@@ -37,14 +39,20 @@ public class User implements UserDetails {
 
   @Column(nullable = false)
   private final String username;
-
   @Column(nullable = false)
   private final String password;
 
-  @Column private String clientId;
 
+  private String authorizationServerUsername;
+  @Column(nullable = false)
+  private boolean isAuthorizationServerLinked;
+
+
+  @Column private String clientId;
   @Column(length = 2048)
   private String registrationAccessToken;
+  @Column(length = 200)
+  private String registrationClientUri;
 
   private String fullname;
   private String street;
@@ -109,6 +117,10 @@ public class User implements UserDetails {
 
   public Optional<String> getRegistrationAccessToken() {
     return Optional.ofNullable(registrationAccessToken);
+  }
+
+  public Optional<String> getRegistrationClientUri() {
+    return Optional.ofNullable(registrationClientUri);
   }
 
   @Override

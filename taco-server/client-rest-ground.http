@@ -1,7 +1,9 @@
+GET {{c_url}}/.well-known/oauth
+
 POST http://localhost:8080/login
 
- --data-urlencode username=habuma
- --data-urlencode password=password 
+--data-urlencode username=habuma
+--data-urlencode password=password 
 
 {%
  _G.gas_header("Set-Cookie", "JSESSIONID=.-;", context, "JID")
@@ -30,25 +32,23 @@ Cookie: {{JID}}
 
 GET http://localhost:8080/api/ingredients
 Cookie: {{JID}}
-
-DELETE http://localhost:8080/api/tacos/2/ingredients/CHED
-Cookie: JSESSIONID={{JID}}
-
-GET http://localhost:8080/data-api/ingredients
-Cookie: {{JID}}
-
+Authorization: Bearer {{TOKEN}}
 #http://localhost:8080/data-api
 
 POST http://localhost:8080/api/ingredients
-Cookie: JSESSIONID={{JID}}
+Cookie: {{JID}}
 Content-Type: application/json
-Authorization: Bearer {{TOKEN}}
+#Authorization: Bearer {{TOKEN}}
 
 {
-  "id": "tort",
+  "id": "TORT",
   "name": "TORT",
   "type": "WRAP"
 }
+
+DELETE http://localhost:8080/api/ingredients/TORT
+Cookie: {{JID}}
+
 
 DELETE localhost:8080/api/ingredients/tort
 Authorization: Bearer {{TOKEN}}
